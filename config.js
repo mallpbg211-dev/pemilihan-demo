@@ -5,8 +5,8 @@
  * - SUPABASE_URL & SUPABASE_KEY: isi hanya kunci publik (anon / publishable).
  */
 window.CONFIG = {
-  SUPABASE_URL: "ISI_URL_PROYEK",
-  SUPABASE_KEY: "ISI_KUNCI_PUBLIK",
+  SUPABASE_URL: "https://uisftrwpoecvvtmatvzm.supabase.co",
+  SUPABASE_KEY: "sb_publishable_1zRcA9kP705HePPfPg2xnQ_YNSpoZG8",
   MODE: "tiruan", // "tiruan" (atau "demo") | "asli"
   PIN_ADMIN: "123456", // PIN pengaman panel panitia
   NAMA_ACARA: "Pemilihan Pratama Pramuka",
