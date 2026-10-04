@@ -1,0 +1,6 @@
+{
+  "name": "Pemilihan Pratama Pramuka",
+  "description": "Aplikasi e-voting pemilihan pasangan Calon Pratama Pramuka yang ringan, andal, dan ramah anak dengan mode offline/retry serta panel admin lengkap.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

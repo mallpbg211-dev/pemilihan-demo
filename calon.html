@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Kenali Calon Pratama Pramuka</title>
+  <meta name="description" content="Profil lengkap, visi, misi, dan program kerja pasangan Calon Pratama Pramuka Putri dan Putra.">
+  <meta property="og:title" content="Kenali Pasangan Calon Pratama Pramuka">
+  <meta property="og:description" content="Baca visi, misi, dan program kerja Calon Pratama Pramuka sebelum hari pemilihan.">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+  <!-- TOP BAR RESMI PRAMUKA -->
+  <header class="header-pramuka">
+    <a href="index.html" class="brand-wrap">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+          <path d="M12 2C10.5 5 7 7.5 7 11c0 2.5 1.5 4.5 3.5 5.5V20c0 .6.4 1 1 1h1c.6 0 1-.4 1-1v-3.5c2-1 3.5-3 3.5-5.5 0-3.5-3.5-6-5-9z"/>
+          <circle cx="12" cy="7" r="1.5" fill="#fbe69d"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-title" id="judul-acara-header">Profil Pasangan Calon</div>
+        <div class="brand-subtitle">Pemilihan Pratama Pramuka</div>
+      </div>
+    </a>
+
+    <nav class="nav-links">
+      <a href="index.html" class="btn btn-aksen" style="min-height: 38px; padding: 6px 14px; font-size: 13px;">
+        Masuk untuk Memilih
+      </a>
+      <a href="hasil.html" class="nav-link">Hasil Suara</a>
+      <a href="admin.html" class="nav-link" style="font-weight: 700; color: var(--utama);" title="Masuk ke Panel Panitia / Admin">Login Admin</a>
+    </nav>
+  </header>
+
+  <main class="wadah">
+
+    <!-- HITUNG MUNDUR SINKRON SERVER -->
+    <div id="kotak-hitung-mundur" class="info-box" style="display: none;">
+      <div class="info-text-kiri">
+        <span class="info-label">Jadwal Pemilihan</span>
+        <span class="info-nilai" id="teks-hitung-mundur">-</span>
+      </div>
+      <div>⏱️</div>
+    </div>
+
+    <!-- PENGANTAR HALAMAN CALON -->
+    <div style="margin-bottom: 20px; text-align: center;">
+      <h1 style="font-size: 22px; font-weight: 900; color: var(--utama); margin-bottom: 6px;">
+        Kenali Pasangan Calon Pratama
+      </h1>
+      <p style="font-size: 14px; color: var(--teks-pudar); max-width: 500px; margin: 0 auto;">
+        Pelajari visi, misi, dan program kerja setiap pasangan sebelum menggunakan hak suaramu di bilik suara.
+      </p>
+    </div>
+
+    <!-- TEMPAT KARTU PASLON -->
+    <div id="wadah-kartu-paslon" class="daftar-paslon-grid">
+      <!-- Skeleton awal -->
+      <div class="kartu-paslon skeleton" style="height: 380px;"></div>
+      <div class="kartu-paslon skeleton" style="height: 380px;"></div>
+    </div>
+
+    <!-- TAUTAN AJAKAN MEMILIH -->
+    <div style="background: var(--kartu); border: 1px solid var(--kartu-border); border-radius: var(--radius-xl); padding: 24px; text-align: center; margin-top: 10px; margin-bottom: 30px;">
+      <div style="font-size: 32px; margin-bottom: 8px;">🗳️</div>
+      <h3 style="font-size: 18px; font-weight: 800; color: var(--utama); margin-bottom: 6px;">Sudah Menentukan Pilihanmu?</h3>
+      <p style="font-size: 14px; color: var(--teks-pudar); margin-bottom: 16px;">
+        Siapkan token kupon kertasmu dan masuk ke bilik suara untuk mencatat pilihanmu.
+      </p>
+      <a href="index.html" class="btn btn-utama" style="min-width: 220px;">
+        Buka Bilik Suara Sekarang
+      </a>
+    </div>
+
+  </main>
+
+  <!-- MODAL DETAIL VISI, MISI, PROGJA (TANPA TOMBOL PILIH) -->
+  <div id="modal-detail" class="detail-modal" style="display: none;">
+    <div class="detail-konten">
+      <div class="detail-header">
+        <div class="detail-judul-wrap">
+          <div class="badge-nomor" id="detail-nomor" style="position: static; width: 36px; height: 36px; font-size: 16px;">01</div>
+          <div>
+            <div style="font-size: 15px; font-weight: 800; color: var(--utama);" id="detail-judul-paslon">Pasangan Calon No. 01</div>
+            <div style="font-size: 12px; color: var(--teks-pudar);">Visi, Misi & Program Kerja</div>
+          </div>
+        </div>
+        <button id="btn-tutup-detail" class="btn-tutup" aria-label="Tutup detail">✕</button>
+      </div>
+
+      <!-- SLIDER FOTO 9:16 PUTRI & PUTRA -->
+      <div class="detail-foto-slider-wrap">
+        <div class="detail-foto-slider" id="detail-slider">
+          <!-- Slide Putri -->
+          <div class="detail-slide">
+            <img id="detail-img-putri" class="detail-foto-img" alt="Foto Calon Pratama Putri">
+            <div class="slide-caption">
+              <div class="slide-caption-role">Calon Pratama Putri</div>
+              <div class="slide-caption-nama" id="detail-nama-putri">-</div>
+              <div style="font-size: 12px; color: #fbe69d;" id="detail-asal-putri">-</div>
+            </div>
+          </div>
+          <!-- Slide Putra -->
+          <div class="detail-slide">
+            <img id="detail-img-putra" class="detail-foto-img" alt="Foto Calon Pratama Putra">
+            <div class="slide-caption">
+              <div class="slide-caption-role">Calon Pratama Putra</div>
+              <div class="slide-caption-nama" id="detail-nama-putra">-</div>
+              <div style="font-size: 12px; color: #fbe69d;" id="detail-asal-putra">-</div>
+            </div>
+          </div>
+        </div>
+        <div class="slider-dots" id="detail-dots">
+          <div class="slider-dot aktif" data-slide="0"></div>
+          <div class="slider-dot" data-slide="1"></div>
+        </div>
+      </div>
+
+      <div class="detail-badan" style="padding-bottom: 24px;">
+        <div class="seksi-detail" id="seksi-visi">
+          <h3 class="seksi-judul">🌟 Visi</h3>
+          <p class="seksi-isi" id="detail-teks-visi">-</p>
+        </div>
+
+        <div class="seksi-detail" id="seksi-misi">
+          <h3 class="seksi-judul">🎯 Misi</h3>
+          <ol class="seksi-daftar" id="detail-daftar-misi"></ol>
+        </div>
+
+        <div class="seksi-detail" id="seksi-progja">
+          <h3 class="seksi-judul">📋 Program Kerja Unggulan</h3>
+          <ol class="seksi-daftar" id="detail-daftar-progja"></ol>
+        </div>
+
+        <div style="margin-top: 14px; text-align: center;">
+          <a href="index.html" class="btn btn-aksen btn-blok">
+            Gunakan Hak Suaramu (Bilik Suara)
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIGHTBOX FOTO PENUH -->
+  <div id="modal-lightbox" class="lightbox-modal" style="display: none;">
+    <img id="lightbox-img" class="lightbox-img" alt="Foto Calon Pramuka Ukuran Penuh">
+    <div class="lightbox-info">
+      <div id="lightbox-nama" style="font-weight: 800; font-size: 16px;">Nama Calon</div>
+      <div id="lightbox-peran" style="color: var(--aksen); font-size: 13px;">Calon Pratama</div>
+      <div class="lightbox-tutup-petunjuk">Ketuk di mana saja untuk menutup</div>
+    </div>
+  </div>
+
+  <script src="./config.js"></script>
+  <script src="./app.js"></script>
+  <script src="./calon.js"></script>
+</body>
+</html>

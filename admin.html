@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Admin - Pemilihan Pratama Pramuka</title>
+  <meta name="description" content="Panel manajemen pemilihan Pratama Pramuka: pengaturan status, pembuatan token, pemantau batch, kelola paslon, dan berita acara.">
+  <link rel="stylesheet" href="./style.css">
+  <style>
+    .admin-tab-nav {
+      display: flex;
+      overflow-x: auto;
+      gap: 6px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid var(--kartu-border);
+      padding-bottom: 6px;
+    }
+    .admin-tab-btn {
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 700;
+      border-radius: var(--radius-sm);
+      border: none;
+      background: transparent;
+      color: var(--teks-pudar);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .admin-tab-btn.aktif {
+      background: var(--utama);
+      color: #fff;
+    }
+    .kartu-stat {
+      background: var(--kartu);
+      border: 1px solid var(--kartu-border);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      text-align: center;
+    }
+    .stat-angka {
+      font-size: 24px;
+      font-weight: 900;
+      margin-top: 4px;
+      font-variant-numeric: tabular-nums;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+      text-align: left;
+    }
+    .form-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--teks);
+    }
+    .form-input, .form-select, .form-textarea {
+      padding: 10px 12px;
+      border: 1.5px solid var(--kartu-border);
+      border-radius: var(--radius-sm);
+      background: var(--kartu);
+      color: var(--teks);
+      font-size: 14px;
+      font-family: inherit;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      outline: none;
+      border-color: var(--utama);
+    }
+    .petunjuk-textarea {
+      font-size: 11px;
+      color: var(--teks-pudar);
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP BAR ADMIN -->
+  <header class="header-pramuka bukan-cetak">
+    <a href="admin.html" class="brand-wrap">
+      <div class="brand-icon" style="background: var(--aksen); color: #2a2118;">
+        ⚙️
+      </div>
+      <div>
+        <div class="brand-title">Panel Admin Panitia</div>
+        <div class="brand-subtitle" id="admin-sub-status">Mode Tiruan Aktif</div>
+      </div>
+    </a>
+
+    <nav class="nav-links">
+      <a href="index.html" target="_blank" class="nav-link">Bilik Suara ↗</a>
+      <a href="hasil.html" target="_blank" class="nav-link">Hasil ↗</a>
+      <button id="btn-keluar-admin" class="btn btn-sekunder" style="min-height: 36px; padding: 4px 10px; font-size: 12px; display: none;">
+        Keluar
+      </button>
+    </nav>
+  </header>
+
+  <main class="wadah-lebar">
+
+    <!-- FORM LOGIN / AUTENTIKASI ADMIN -->
+    <div id="seksi-login" class="kartu-token bukan-cetak" style="max-width: 440px; margin: 30px auto; display: none;">
+      <h2 style="font-size: 20px; font-weight: 800; color: var(--utama); margin-bottom: 4px;">Autentikasi Panitia</h2>
+      <p style="font-size: 13px; color: var(--teks-pudar); margin-bottom: 16px;">
+        Masukkan PIN Panitia untuk membuka akses pengelolaan pemilihan.
+      </p>
+
+      <!-- METODE LOGIN: PIN / SUPABASE AUTH -->
+      <div style="display: flex; gap: 6px; background: var(--latar-subtle); padding: 4px; border-radius: var(--radius-sm); margin-bottom: 16px;">
+        <button type="button" id="tab-login-pin-btn" class="btn btn-utama" style="flex: 1; min-height: 36px; padding: 4px 8px; font-size: 13px;">
+          PIN Panitia
+        </button>
+        <button type="button" id="tab-login-supabase-btn" class="btn btn-sekunder" style="flex: 1; min-height: 36px; padding: 4px 8px; font-size: 13px; border: none;">
+          Akun Supabase
+        </button>
+      </div>
+
+      <!-- FORM 1: PIN PANITIA -->
+      <form id="form-login-pin" onsubmit="event.preventDefault();">
+        <div class="form-group">
+          <label class="form-label" style="text-align: center;">PIN Pengaman Panitia</label>
+          <div class="input-token-wrap" style="max-width: 240px; margin: 0 auto 8px;">
+            <input
+              type="password"
+              id="login-pin-input"
+              class="input-token"
+              placeholder="••••••"
+              maxlength="20"
+              autocomplete="off"
+              style="letter-spacing: 6px;"
+              required
+            >
+          </div>
+        </div>
+        <div id="pesan-error-pin" class="pesan-kesalahan" style="text-align: center;"></div>
+
+        <button type="submit" id="btn-submit-pin" class="btn btn-utama btn-blok" style="margin-top: 10px;">
+          Buka Panel Panitia
+        </button>
+      </form>
+
+      <!-- FORM 2: SUPABASE AUTH (EMAIL & PASSWORD) -->
+      <form id="form-login-admin" onsubmit="event.preventDefault();" style="display: none;">
+        <div class="form-group">
+          <label class="form-label">Email Admin</label>
+          <input type="email" id="login-email" class="form-input" placeholder="admin@sekolah.sch.id">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Kata Sandi</label>
+          <input type="password" id="login-password" class="form-input" placeholder="••••••••">
+        </div>
+        <div id="pesan-error-login" class="pesan-kesalahan"></div>
+
+        <button type="submit" id="btn-submit-login" class="btn btn-utama btn-blok" style="margin-top: 10px;">
+          Masuk Supabase
+        </button>
+      </form>
+    </div>
+
+    <!-- AREA PANEL ADMIN UTAMA -->
+    <div id="seksi-panel-admin" class="bukan-cetak" style="display: none;">
+
+      <!-- NAVIGASI TAB ADMIN -->
+      <div class="admin-tab-nav">
+        <button class="admin-tab-btn aktif" data-tab="tab-ringkasan">Ringkasan & Status</button>
+        <button class="admin-tab-btn" data-tab="tab-batch">Pantau Batch</button>
+        <button class="admin-tab-btn" data-tab="tab-paslon">Kelola Paslon</button>
+        <button class="admin-tab-btn" data-tab="tab-token">Kelola Token & Cetak</button>
+        <button class="admin-tab-btn" data-tab="tab-cetak-rekap">Rekap Berita Acara</button>
+        <button class="admin-tab-btn" data-tab="tab-database">Pengaturan & SQL</button>
+      </div>
+
+      <!-- TAB 1: RINGKASAN & STATUS PEMILIHAN -->
+      <div id="tab-ringkasan" class="tab-isi">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 20px;">
+          <div class="kartu-stat">
+            <div style="font-size: 11px; color: var(--teks-pudar); font-weight: 700; text-transform: uppercase;">Total Token</div>
+            <div class="stat-angka" id="admin-stat-total">0</div>
+          </div>
+          <div class="kartu-stat">
+            <div style="font-size: 11px; color: var(--sukses); font-weight: 700; text-transform: uppercase;">Token Aktif</div>
+            <div class="stat-angka" style="color: var(--sukses);" id="admin-stat-aktif">0</div>
+          </div>
+          <div class="kartu-stat">
+            <div style="font-size: 11px; color: var(--utama); font-weight: 700; text-transform: uppercase;">Token Terpakai</div>
+            <div class="stat-angka" style="color: var(--utama);" id="admin-stat-terpakai">0</div>
+          </div>
+          <div class="kartu-stat">
+            <div style="font-size: 11px; color: var(--bahaya); font-weight: 700; text-transform: uppercase;">Token Batal</div>
+            <div class="stat-angka" style="color: var(--bahaya);" id="admin-stat-batal">0</div>
+          </div>
+          <div class="kartu-stat">
+            <div style="font-size: 11px; color: var(--aksen); font-weight: 700; text-transform: uppercase;">Suara Masuk</div>
+            <div class="stat-angka" style="color: var(--aksen);" id="admin-stat-suara">0</div>
+          </div>
+          <div class="kartu-stat">
+            <div style="font-size: 11px; color: var(--teks-pudar); font-weight: 700; text-transform: uppercase;">Audit Suara</div>
+            <div class="stat-angka" id="admin-stat-audit" style="font-size: 14px; margin-top: 6px;">
+              Memeriksa...
+            </div>
+          </div>
+        </div>
+
+        <!-- FORM PENGATURAN STATUS & WAKTU -->
+        <div style="background: var(--kartu); border: 1px solid var(--kartu-border); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 20px; box-shadow: var(--bayangan);">
+          <h3 style="font-size: 17px; font-weight: 800; color: var(--utama); margin-bottom: 12px;">
+            Kontrol Sesi & Pengaturan Hasil
+          </h3>
+
+          <form id="form-pengaturan-status" onsubmit="event.preventDefault();">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
+              <div class="form-group">
+                <label class="form-label">Status Pemilihan</label>
+                <select id="set-status" class="form-select">
+                  <option value="belum_dibuka">belum_dibuka (Menunggu Jadwal)</option>
+                  <option value="dibuka">dibuka (Bilik Suara Aktif)</option>
+                  <option value="ditutup">ditutup (Pemilihan Selesai)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Jadwal Buka (Opsional)</label>
+                <input type="datetime-local" id="set-buka-pada" class="form-input">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Jadwal Tutup (Opsional)</label>
+                <input type="datetime-local" id="set-tutup-pada" class="form-input">
+              </div>
+            </div>
+
+            <div style="margin-top: 10px; padding: 12px; background: var(--latar-subtle); border-radius: var(--radius-md); display: flex; flex-direction: column; gap: 10px;">
+              <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                <input type="checkbox" id="set-tampilkan-hasil" style="width: 18px; height: 18px; accent-color: var(--utama);">
+                <div>
+                  <span style="font-weight: 700; font-size: 14px;">Tampilkan hasil ke umum</span>
+                  <div style="font-size: 12px; color: var(--teks-pudar);">Mengizinkan publik membuka halaman hasil.</div>
+                </div>
+              </label>
+
+              <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer;">
+                <input type="checkbox" id="set-hasil-langsung" style="width: 18px; height: 18px; accent-color: var(--peringatan);">
+                <div>
+                  <span style="font-weight: 700; font-size: 14px; color: var(--peringatan);">Hasil sementara (langsung)</span>
+                  <div style="font-size: 12px; color: var(--teks-pudar); line-height: 1.4;">
+                    ⚠️ Peringatan: Hasil yang terlihat saat pemilihan berjalan bisa memengaruhi anak yang belum memilih. (Bawaannya mati).
+                  </div>
+                </div>
+              </label>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 16px;">
+              <button type="submit" id="btn-simpan-pengaturan" class="btn btn-utama">
+                Simpan Perubahan Pengaturan
+              </button>
+              <button type="button" id="btn-refresh-ringkasan" class="btn btn-sekunder">
+                Muat Ulang
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- RESET DEMO / TIRUAN -->
+        <div id="kotak-aksi-demo" style="background: var(--latar-subtle); border: 1.5px dashed var(--bahaya); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 20px;">
+          <h4 style="font-size: 15px; font-weight: 800; color: var(--bahaya); margin-bottom: 4px;">Reset Mode Uji Coba (Demo/Tiruan)</h4>
+          <p style="font-size: 13px; color: var(--teks-pudar); margin-bottom: 10px;">
+            Mengosongkan seluruh data suara dan mengaktifkan kembali seluruh token kupon.
+          </p>
+          <button id="btn-reset-demo" class="btn btn-bahaya" style="min-height: 38px; font-size: 13px;">
+            Reset Simulasi Suara (Kembalikan Token)
+          </button>
+        </div>
+      </div>
+
+      <!-- TAB 2: PEMANTAU PARTISIPASI BATCH -->
+      <div id="tab-batch" class="tab-isi" style="display: none;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+          <div>
+            <h3 style="font-size: 18px; font-weight: 800; color: var(--utama);">Pemantau Partisipasi Per Batch</h3>
+            <p style="font-size: 13px; color: var(--teks-pudar);">
+              Memantau tingkat kehadiran suara per kelas/regu tanpa data per anak.
+            </p>
+          </div>
+          <button id="btn-refresh-batch" class="btn btn-sekunder" style="min-height: 36px; padding: 4px 10px; font-size: 12px;">
+            Segarkan
+          </button>
+        </div>
+
+        <div class="tabel-pembungkus">
+          <table class="tabel-admin">
+            <thead>
+              <tr>
+                <th>Nama Batch</th>
+                <th>Total Kupon</th>
+                <th>Sudah Memilih</th>
+                <th>Belum Memilih</th>
+                <th>Batal</th>
+                <th>Persentase Partisipasi</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-batch">
+              <!-- Render lewat admin.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 3: KELOLA PASANGAN CALON (PASLON) -->
+      <div id="tab-paslon" class="tab-isi" style="display: none;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+          <div>
+            <h3 style="font-size: 18px; font-weight: 800; color: var(--utama);">Kelola Pasangan Calon</h3>
+            <p style="font-size: 13px; color: var(--teks-pudar);">
+              Tambah dan ubah data pasangan nomor urut dengan foto potret 9:16 teroptimasi.
+            </p>
+          </div>
+          <button id="btn-tambah-paslon-baru" class="btn btn-utama" style="min-height: 36px; padding: 4px 12px; font-size: 13px;">
+            + Tambah Paslon
+          </button>
+        </div>
+
+        <!-- FORM TAMBAH / EDIT PASLON -->
+        <div id="wadah-form-paslon" style="display: none; background: var(--kartu); border: 1.5px solid var(--utama); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 24px; box-shadow: var(--bayangan);">
+          <h4 style="font-size: 16px; font-weight: 800; color: var(--utama); margin-bottom: 14px;" id="judul-form-paslon">
+            Tambah Pasangan Calon Baru
+          </h4>
+
+          <div id="peringatan-edit-dibuka" style="display: none; background: var(--bahaya-latar); border: 1px solid var(--bahaya); color: var(--bahaya); padding: 10px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; margin-bottom: 14px;">
+            ⚠️ Peringatan: Status pemilihan saat ini sedang DIBUKA. Mengubah data calon saat pemungutan suara berlangsung dapat membingungkan pemilih.
+          </div>
+
+          <form id="form-paslon" onsubmit="event.preventDefault();">
+            <input type="hidden" id="paslon-id">
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
+              <div class="form-group">
+                <label class="form-label">Nomor Urut (Harus Unik)</label>
+                <input type="number" id="paslon-nomor" class="form-input" min="1" max="99" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Status Aktif</label>
+                <select id="paslon-aktif" class="form-select">
+                  <option value="true">Aktif (Tampil di Surat Suara)</option>
+                  <option value="false">Nonaktif (Sembunyikan)</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px;">
+              <!-- KOLOM PUTRI -->
+              <div style="background: var(--latar-subtle); padding: 14px; border-radius: var(--radius-md);">
+                <div style="font-weight: 800; font-size: 14px; color: var(--utama); margin-bottom: 10px;">Calon Pratama Putri</div>
+                <div class="form-group">
+                  <label class="form-label">Nama Lengkap Putri</label>
+                  <input type="text" id="paslon-nama-putri" class="form-input" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Asal / Kelas / Regu Putri</label>
+                  <input type="text" id="paslon-asal-putri" class="form-input" placeholder="Contoh: Kelas 8A · Regu Melati">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Foto Putri (Rasio 9:16)</label>
+                  <input type="file" id="paslon-file-putri" accept="image/*" class="form-input">
+                  <div style="font-size: 11px; color: var(--teks-pudar); margin-top: 4px;">Otomatis dipotong 9:16 & diperkecil &lt; 200 KB.</div>
+                  <div id="pratinjau-putri-wrap" style="margin-top: 8px;"></div>
+                </div>
+              </div>
+
+              <!-- KOLOM PUTRA -->
+              <div style="background: var(--latar-subtle); padding: 14px; border-radius: var(--radius-md);">
+                <div style="font-weight: 800; font-size: 14px; color: var(--utama); margin-bottom: 10px;">Calon Pratama Putra</div>
+                <div class="form-group">
+                  <label class="form-label">Nama Lengkap Putra</label>
+                  <input type="text" id="paslon-nama-putra" class="form-input" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Asal / Kelas / Regu Putra</label>
+                  <input type="text" id="paslon-asal-putra" class="form-input" placeholder="Contoh: Kelas 8B · Regu Rajawali">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Foto Putra (Rasio 9:16)</label>
+                  <input type="file" id="paslon-file-putra" accept="image/*" class="form-input">
+                  <div style="font-size: 11px; color: var(--teks-pudar); margin-top: 4px;">Otomatis dipotong 9:16 & diperkecil &lt; 200 KB.</div>
+                  <div id="pratinjau-putra-wrap" style="margin-top: 8px;"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- VISI MISI PROGRAM KERJA -->
+            <div class="form-group" style="margin-top: 14px;">
+              <label class="form-label">Visi Pasangan Calon</label>
+              <textarea id="paslon-visi" class="form-textarea" rows="2" placeholder="Tuliskan visi singkat pasangan calon..." required></textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Misi Pasangan Calon</label>
+              <div class="petunjuk-textarea">Ketik satu butir misi per baris (tekan Enter untuk butir berikutnya):</div>
+              <textarea id="paslon-misi" class="form-textarea" rows="3" placeholder="Meningkatkan kedisiplinan latihan mingguan&#10;Mengadakan bakti sosial gugus depan" required></textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Program Kerja Unggulan</label>
+              <div class="petunjuk-textarea">Ketik satu butir program kerja per baris (tekan Enter untuk butir berikutnya):</div>
+              <textarea id="paslon-progja" class="form-textarea" rows="3" placeholder="Perkemahan Sabtu Minggu Akbar&#10;Lomba Asah Terampil Penggalang Ceria" required></textarea>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 16px;">
+              <button type="submit" id="btn-simpan-paslon" class="btn btn-utama">
+                Simpan Paslon
+              </button>
+              <button type="button" id="btn-batal-paslon" class="btn btn-sekunder">
+                Batal
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- DAFTAR PASLON DALAM TABEL ADMIN -->
+        <div class="tabel-pembungkus">
+          <table class="tabel-admin">
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Calon Putri</th>
+                <th>Calon Putra</th>
+                <th>Visi Ringkas</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-paslon">
+              <!-- Render lewat admin.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 4: KELOLA TOKEN & CETAK KUPON KERTAS -->
+      <div id="tab-token" class="tab-isi" style="display: none;">
+        <div style="background: var(--kartu); border: 1px solid var(--kartu-border); border-radius: var(--radius-lg); padding: 18px; margin-bottom: 20px; box-shadow: var(--bayangan);">
+          <h3 style="font-size: 16px; font-weight: 800; color: var(--utama); margin-bottom: 10px;">
+            Buat Token Kupon Baru
+          </h3>
+          <form id="form-buat-token" onsubmit="event.preventDefault();" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;">
+            <div class="form-group" style="margin-bottom: 0; min-width: 130px;">
+              <label class="form-label">Jumlah Token</label>
+              <input type="number" id="buat-token-jumlah" class="form-input" value="10" min="1" max="500">
+            </div>
+            <div class="form-group" style="margin-bottom: 0; flex: 1; min-width: 180px;">
+              <label class="form-label">Nama Batch (Contoh: Kelas 7A / Regu Melati)</label>
+              <input type="text" id="buat-token-batch" class="form-input" placeholder="Batch 1">
+            </div>
+            <button type="submit" id="btn-buat-token-submit" class="btn btn-utama">
+              + Generate Token
+            </button>
+          </form>
+        </div>
+
+        <!-- FILTER STATUS TOKEN -->
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 10px; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <h3 style="font-size: 17px; font-weight: 800; color: var(--utama);">Daftar Token Kupon</h3>
+            <select id="filter-status-token" class="form-select" style="height: 36px; padding: 0 10px; font-size: 13px;">
+              <option value="semua">Semua Status</option>
+              <option value="aktif">Aktif Saja</option>
+              <option value="terpakai">Terpakai Saja</option>
+              <option value="batal">Batal Saja</option>
+            </select>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button id="btn-cetak-slip-kupon" class="btn btn-aksen" style="min-height: 36px; padding: 4px 12px; font-size: 12px;">
+              🖨️ Cetak Slip Kupon (10 / A4)
+            </button>
+            <button id="btn-ekspor-csv-token" class="btn btn-sekunder" style="min-height: 36px; padding: 4px 10px; font-size: 12px;">
+              📥 Ekspor CSV Token
+            </button>
+            <button id="btn-refresh-token" class="btn btn-sekunder" style="min-height: 36px; padding: 4px 10px; font-size: 12px;">
+              Segarkan
+            </button>
+          </div>
+        </div>
+
+        <div class="tabel-pembungkus" style="max-height: 460px; overflow-y: auto;">
+          <table class="tabel-admin">
+            <thead>
+              <tr>
+                <th>Kode Token</th>
+                <th>Batch</th>
+                <th>Status</th>
+                <th>Dibuat Pada</th>
+                <th>Waktu Dipakai</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-token">
+              <!-- Render lewat admin.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 5: REKAP RESMI BERITA ACARA CETAK -->
+      <div id="tab-cetak-rekap" class="tab-isi" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <div>
+            <h3 style="font-size: 18px; font-weight: 800; color: var(--utama);">Berita Acara & Rekap Hasil Resmi</h3>
+            <p style="font-size: 13px; color: var(--teks-pudar);">
+              Format dokumen resmi siap cetak A4 untuk arsip dan tanda tangan panitia.
+            </p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button id="btn-ekspor-csv" class="btn btn-sekunder" style="min-height: 36px; padding: 4px 12px; font-size: 13px;">
+              📥 Ekspor CSV Hasil
+            </button>
+            <button onclick="window.print()" class="btn btn-utama" style="min-height: 36px; padding: 4px 14px; font-size: 13px;">
+              🖨️ Cetak Berita Acara
+            </button>
+          </div>
+        </div>
+
+        <!-- PRATINJAU DOKUMEN CETAK BERITA ACARA -->
+        <div id="dokumen-berita-acara" class="dokumen-cetak" style="background: #ffffff; color: #000; border: 1px solid var(--kartu-border); border-radius: var(--radius-md); padding: 36px 30px; box-shadow: var(--bayangan); font-family: 'Times New Roman', serif; position: relative;">
+          
+          <div id="watermark-draft" class="watermark-draft" style="display: none;">
+            DRAFT — PEMILIHAN BELUM DITUTUP
+          </div>
+
+          <div style="text-align: center; border-bottom: 3px double #000; padding-bottom: 12px; margin-bottom: 16px;">
+            <h2 style="font-size: 17px; font-weight: 900; text-transform: uppercase; margin-bottom: 2px;">
+              GERAKAN PRAMUKA GUGUS DEPAN
+            </h2>
+            <h1 style="font-size: 19px; font-weight: 900; text-transform: uppercase; margin-bottom: 4px;" id="rekap-nama-acara">
+              BERITA ACARA PEMILIHAN PRATAMA
+            </h1>
+            <p style="font-size: 12px; font-style: italic;">
+              Sekretariat Panitia Pemilihan · Penghitungan Suara Elektronik Terenkripsi
+            </p>
+          </div>
+
+          <p style="font-size: 13px; line-height: 1.6; margin-bottom: 12px; text-align: justify;">
+            Pada hari ini, tanggal <strong id="rekap-tanggal">-</strong>, telah dilaksanakan pemungutan dan penghitungan suara untuk menentukan Pasangan Calon Pratama Putri dan Calon Pratama Putra dengan rincian perolehan suara sebagai berikut:
+          </p>
+
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 18px; font-size: 13px;">
+            <thead>
+              <tr style="background: #f0f0f0;">
+                <th style="border: 1px solid #000; padding: 6px; width: 60px;">No.</th>
+                <th style="border: 1px solid #000; padding: 6px;">Calon Pratama Putri</th>
+                <th style="border: 1px solid #000; padding: 6px;">Calon Pratama Putra</th>
+                <th style="border: 1px solid #000; padding: 6px; text-align: right; width: 120px;">Perolehan Suara</th>
+                <th style="border: 1px solid #000; padding: 6px; text-align: right; width: 100px;">Persentase</th>
+              </tr>
+            </thead>
+            <tbody id="rekap-tbody-paslon">
+              <!-- Render lewat admin.js -->
+            </tbody>
+            <tfoot>
+              <tr style="font-weight: bold; background: #fafafa;">
+                <td colspan="3" style="border: 1px solid #000; padding: 6px; text-align: right;">Total Suara Sah:</td>
+                <td style="border: 1px solid #000; padding: 6px; text-align: right;" id="rekap-total-suara">0</td>
+                <td style="border: 1px solid #000; padding: 6px; text-align: right;">100%</td>
+              </tr>
+            </tfoot>
+          </table>
+
+          <div style="font-size: 12px; margin-bottom: 24px; line-height: 1.6;">
+            <div>1. Total Kupon Token Terdistribusi: <strong id="rekap-token-total">0</strong> kupon.</div>
+            <div>2. Total Kupon Token Digunakan: <strong id="rekap-token-terpakai">0</strong> kupon.</div>
+            <div>3. Total Kupon Token Batal/Tidak Digunakan: <strong id="rekap-token-sisa">0</strong> kupon.</div>
+            <div>4. Status Integritas Audit: <strong id="rekap-status-audit">COCOK</strong></div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; text-align: center; font-size: 12px; margin-top: 30px;">
+            <div>
+              <div>Saksi Regu Putri,</div>
+              <div style="height: 50px;"></div>
+              <div style="font-weight: bold; border-top: 1px solid #000; display: inline-block; padding-top: 2px; min-width: 130px;">
+                (....................................)
+              </div>
+            </div>
+            <div>
+              <div>Saksi Regu Putra,</div>
+              <div style="height: 50px;"></div>
+              <div style="font-weight: bold; border-top: 1px solid #000; display: inline-block; padding-top: 2px; min-width: 130px;">
+                (....................................)
+              </div>
+            </div>
+            <div>
+              <div>Ketua Panitia Pemilihan,</div>
+              <div style="height: 50px;"></div>
+              <div style="font-weight: bold; border-top: 1px solid #000; display: inline-block; padding-top: 2px; min-width: 130px;">
+                (....................................)
+              </div>
+            </div>
+          </div>
+
+          <div style="text-align: center; margin-top: 24px; font-size: 12px;">
+            <div>Mengetahui,</div>
+            <div style="font-weight: bold;">Pembina Gugus Depan Pramuka</div>
+            <div style="height: 50px;"></div>
+            <div style="font-weight: bold; border-top: 1px solid #000; display: inline-block; padding-top: 2px; min-width: 180px;">
+              (......................................................)
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 6: DATABASE & SQL -->
+      <div id="tab-database" class="tab-isi" style="display: none;">
+        
+        <!-- PENGATURAN PIN PANITIA -->
+        <div style="background: var(--kartu); border: 1px solid var(--kartu-border); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 20px; box-shadow: var(--bayangan);">
+          <h3 style="font-size: 17px; font-weight: 800; color: var(--utama); margin-bottom: 6px;">
+            Keamanan & PIN Pengaman Panitia
+          </h3>
+          <p style="font-size: 13px; color: var(--teks-pudar); margin-bottom: 14px;">
+            Ganti PIN panitia untuk mencegah siswa atau pemilih membuka panel admin dari perangkat yang sama.
+          </p>
+
+          <form id="form-ubah-pin" onsubmit="event.preventDefault();" style="max-width: 360px;">
+            <div class="form-group">
+              <label class="form-label">PIN Panitia Baru</label>
+              <input type="password" id="input-pin-baru" class="form-input" placeholder="Minimal 4 digit..." required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Konfirmasi PIN Baru</label>
+              <input type="password" id="input-pin-baru-konfirm" class="form-input" placeholder="Ketik ulang PIN..." required>
+            </div>
+            <div id="pesan-status-pin" style="font-size: 13px; font-weight: 700; margin-bottom: 10px;"></div>
+
+            <button type="submit" id="btn-simpan-pin-baru" class="btn btn-utama">
+              Simpan PIN Baru
+            </button>
+          </form>
+        </div>
+
+        <div style="background: var(--kartu); border: 1px solid var(--kartu-border); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 20px; box-shadow: var(--bayangan);">
+          <h3 style="font-size: 17px; font-weight: 800; color: var(--utama); margin-bottom: 6px;">
+            Koneksi Supabase Proyek
+          </h3>
+          <p style="font-size: 13px; color: var(--teks-pudar); margin-bottom: 14px;">
+            Beralih antara Mode Tiruan (offline) atau Supabase asli.
+          </p>
+
+          <form id="form-config-override" onsubmit="event.preventDefault();">
+            <div class="form-group">
+              <label class="form-label">Mode Operasi</label>
+              <select id="cfg-mode" class="form-select">
+                <option value="tiruan">Mode Tiruan (Demo Mandiri - Tanpa Backend Luar)</option>
+                <option value="asli">Mode Asli (Terhubung Supabase)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Supabase Project URL</label>
+              <input type="url" id="cfg-supabase-url" class="form-input" placeholder="https://xyzcompany.supabase.co">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Supabase Anon / Public Key</label>
+              <input type="text" id="cfg-supabase-key" class="form-input" placeholder="sb_publishable_... atau eyJhbGciOi...">
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+              <button type="submit" id="btn-simpan-config" class="btn btn-utama">
+                Terapkan Pengaturan
+              </button>
+              <button type="button" id="btn-test-koneksi" class="btn btn-sekunder">
+                Tes Koneksi RPC
+              </button>
+            </div>
+            <div id="pesan-status-koneksi" style="font-size: 13px; font-weight: 700; margin-top: 10px;"></div>
+          </form>
+        </div>
+
+        <div style="background: var(--kartu); border: 1px solid var(--kartu-border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--bayangan);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h3 style="font-size: 17px; font-weight: 800; color: var(--utama);">
+              Skema SQL Supabase Lengkap
+            </h3>
+            <button id="btn-salin-sql" class="btn btn-aksen" style="min-height: 36px; padding: 4px 12px; font-size: 12px;">
+              📋 Salin Seluruh SQL
+            </button>
+          </div>
+          <textarea id="area-sql-view" readonly style="width: 100%; height: 260px; font-family: monospace; font-size: 12px; padding: 10px; border: 1px solid var(--kartu-border); border-radius: var(--radius-sm); background: var(--latar-subtle); color: var(--teks);"></textarea>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TAMPILAN CETAK SLIP KUPON 10 PER A4 (2 KOLOM X 5 BARIS) -->
+    <div id="wadah-cetak-kupon" class="dokumen-cetak" style="display: none;">
+      <div class="halaman-cetak-kupon" id="grid-kupon-cetak">
+        <!-- Render dinamis lewat admin.js -->
+      </div>
+    </div>
+
+  </main>
+
+  <script src="./config.js"></script>
+  <script src="./app.js"></script>
+  <script src="./admin.js"></script>
+</body>
+</html>

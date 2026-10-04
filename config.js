@@ -1,0 +1,14 @@
+/**
+ * PENGATURAN APLIKASI PEMILIHAN PRATAMA PRAMUKA
+ * - MODE: "tiruan" (atau "demo") untuk pengujian mandiri tanpa koneksi luar, atau "asli" untuk Supabase.
+ * - PIN_ADMIN: PIN / Kata Sandi pengaman akses panel panitia (bawaan: 123456).
+ * - SUPABASE_URL & SUPABASE_KEY: isi hanya kunci publik (anon / publishable).
+ */
+window.CONFIG = {
+  SUPABASE_URL: "ISI_URL_PROYEK",
+  SUPABASE_KEY: "ISI_KUNCI_PUBLIK",
+  MODE: "tiruan", // "tiruan" (atau "demo") | "asli"
+  PIN_ADMIN: "123456", // PIN pengaman panel panitia
+  NAMA_ACARA: "Pemilihan Pratama Pramuka",
+  ALAMAT_WEB: typeof window !== 'undefined' ? window.location.origin : ""
+};

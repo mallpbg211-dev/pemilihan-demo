@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Bilik Suara - Pemilihan Pratama Pramuka</title>
+  <meta name="description" content="Aplikasi e-voting pemilihan pasangan Calon Pratama Pramuka yang ringan, andal, dan ramah anak.">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+  <!-- TOP BAR RESMI PRAMUKA -->
+  <header class="header-pramuka">
+    <a href="index.html" class="brand-wrap">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+          <path d="M12 2C10.5 5 7 7.5 7 11c0 2.5 1.5 4.5 3.5 5.5V20c0 .6.4 1 1 1h1c.6 0 1-.4 1-1v-3.5c2-1 3.5-3 3.5-5.5 0-3.5-3.5-6-5-9z"/>
+          <circle cx="12" cy="7" r="1.5" fill="#fbe69d"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-title" id="judul-acara-header">Pemilihan Pratama</div>
+        <div class="brand-subtitle">Gerakan Pramuka Gugus Depan</div>
+      </div>
+    </a>
+
+    <nav class="nav-links">
+      <a href="calon.html" class="nav-link">Kenali Calon</a>
+      <a href="hasil.html" class="nav-link">Hasil Suara</a>
+      <a href="admin.html" class="nav-link" style="font-weight: 700; color: var(--utama);" title="Masuk ke Panel Panitia / Admin">Login Admin</a>
+    </nav>
+  </header>
+
+  <main class="wadah">
+
+    <!-- HITUNG MUNDUR SINKRON JAM SERVER -->
+    <div id="kotak-hitung-mundur" class="info-box" style="display: none;">
+      <div class="info-text-kiri">
+        <span class="info-label">Jadwal Pemilihan</span>
+        <span class="info-nilai" id="teks-hitung-mundur">-</span>
+      </div>
+      <div style="font-size: 20px;">⏱️</div>
+    </div>
+
+    <!-- TAMPILAN 1: STATUS BELUM DIBUKA / DITUTUP -->
+    <section id="layar-status-khusus" class="kartu-token" style="display: none;">
+      <div style="font-size: 44px; margin-bottom: 8px;" id="ikon-status-khusus">⏳</div>
+      <h2 id="judul-status-khusus" style="font-size: 19px; font-weight: 800; color: var(--utama); margin-bottom: 6px;">Pemilihan Belum Dibuka</h2>
+      <p id="pesan-status-khusus" class="token-instruksi">Panitia belum membuka sesi pemilihan suara. Silakan tunggu jadwal resmi dari pembina.</p>
+      
+      <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 8px;">
+        <a href="calon.html" class="btn btn-aksen">Baca Visi & Misi Calon Dulu</a>
+        <button id="btn-cek-lagi-status" class="btn btn-sekunder">Muat Ulang Status</button>
+      </div>
+    </section>
+
+    <!-- TAMPILAN 2: INPUT TOKEN -->
+    <section id="layar-token" class="kartu-token">
+      <div style="font-size: 34px; margin-bottom: 6px;">🎟️</div>
+      <h2 style="font-size: 19px; font-weight: 800; color: var(--utama); margin-bottom: 4px;">Masukkan Token Kupon</h2>
+      <p class="token-instruksi">
+        Ketik kode token dari kupon kertas yang diberikan panitia. Satu token berlaku untuk satu kali memilih.
+      </p>
+
+      <form id="form-token" autocomplete="off" onsubmit="event.preventDefault();">
+        <div class="input-token-wrap">
+          <input
+            type="text"
+            id="input-token"
+            class="input-token"
+            placeholder="PRM-01"
+            maxlength="12"
+            autocapitalize="characters"
+            autocomplete="off"
+            autocorrect="off"
+            spellcheck="false"
+            required
+          >
+        </div>
+
+        <div id="pesan-error-token" class="pesan-kesalahan"></div>
+
+        <button type="submit" id="btn-lanjut-token" class="btn btn-utama btn-blok" style="margin-top: 6px;">
+          Lanjut Memilih
+        </button>
+
+        <!-- Tautan kecil "Lihat calon" -->
+        <div style="margin-top: 14px; text-align: center;">
+          <a href="calon.html" style="font-size: 13px; color: var(--utama); font-weight: 700; text-decoration: none;">
+            🔍 Belum kenal calon? <u>Lihat calon di sini</u>
+          </a>
+        </div>
+      </form>
+    </section>
+
+    <!-- TAMPILAN 3: DAFTAR PASANGAN CALON -->
+    <section id="layar-pilih" style="display: none;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+        <div>
+          <h2 style="font-size: 19px; font-weight: 800; color: var(--utama);">Pilih Pasangan Calon</h2>
+          <p style="font-size: 13px; color: var(--teks-pudar);">Sentuh pasangan nomor urut pilihanmu.</p>
+        </div>
+        <button id="btn-ganti-token" class="btn btn-sekunder" style="min-height: 36px; padding: 4px 10px; font-size: 12px;">
+          Ganti Token
+        </button>
+      </div>
+
+      <div id="wadah-kartu-paslon" class="daftar-paslon-grid">
+        <!-- Render dinamis via JS -->
+      </div>
+    </section>
+
+    <!-- TAMPILAN 4: PENGIRIMAN & RETRY JARINGAN LEMAH -->
+    <section id="layar-proses" class="kartu-token" style="display: none;">
+      <div style="font-size: 38px; margin-bottom: 8px;" id="ikon-proses">📡</div>
+      <h2 id="judul-proses" style="font-size: 19px; font-weight: 800; color: var(--utama); margin-bottom: 6px;">Mengirim Pilihan Suara...</h2>
+      <p id="pesan-proses" style="font-size: 14px; color: var(--teks-pudar); margin-bottom: 12px;">
+        Mohon jangan tutup halaman ini. Pilihanmu sedang dicatat di server.
+      </p>
+
+      <div id="wadah-retry-box" class="kotak-retry" style="display: none;">
+        <div class="teks-retry" id="teks-retry-pesan">
+          Sinyal sedang lemah. Pilihanmu tersimpan di HP ini dan akan dikirim otomatis. Jangan tutup halaman ini.
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button id="btn-retry-sekarang" class="btn btn-utama" style="flex: 1;">Coba Lagi Sekarang</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAMPILAN 5: SUKSES -->
+    <section id="layar-sukses" class="layar-sukses" style="display: none;">
+      <div class="confetti-wadah" id="confetti-box"></div>
+      
+      <div class="centang-lingkaran">✓</div>
+      <h2 style="font-size: 22px; font-weight: 900; color: var(--utama); margin-bottom: 6px;">Terima Kasih!</h2>
+      <p style="font-size: 15px; font-weight: 700; color: var(--sukses); margin-bottom: 16px;">
+        Suaramu sudah tercatat.
+      </p>
+      <p style="font-size: 13px; color: var(--teks-pudar); margin-bottom: 20px;">
+        Layar akan kembali ke awal secara otomatis dalam <span id="hitung-mundur-reset" style="font-weight: 800; color: var(--utama);">10</span> detik untuk pemilih berikutnya.
+      </p>
+
+      <button id="btn-selesai-manual" class="btn btn-utama">
+        Kembali ke Layar Awal
+      </button>
+    </section>
+
+  </main>
+
+  <!-- MODAL DETAIL VISI, MISI, PROGJA -->
+  <div id="modal-detail" class="detail-modal" style="display: none;">
+    <div class="detail-konten">
+      <div class="detail-header">
+        <div class="detail-judul-wrap" style="display: flex; align-items: center; gap: 8px;">
+          <div class="badge-nomor" id="detail-nomor" style="position: static; width: 34px; height: 34px; font-size: 15px;">01</div>
+          <div>
+            <div style="font-size: 15px; font-weight: 800; color: var(--utama);" id="detail-judul-paslon">Pasangan Calon No. 01</div>
+            <div style="font-size: 11px; color: var(--teks-pudar);">Visi, Misi & Program Kerja</div>
+          </div>
+        </div>
+        <button id="btn-tutup-detail" class="btn-tutup" aria-label="Tutup detail">✕</button>
+      </div>
+
+      <!-- SLIDER FOTO 9:16 PUTRI & PUTRA -->
+      <div class="detail-foto-slider-wrap">
+        <div class="detail-foto-slider" id="detail-slider">
+          <div class="detail-slide">
+            <img id="detail-img-putri" class="detail-foto-img" alt="Foto Calon Pratama Putri">
+            <div class="slide-caption">
+              <div class="slide-caption-role">Calon Pratama Putri</div>
+              <div class="slide-caption-nama" id="detail-nama-putri">-</div>
+              <div style="font-size: 11px; color: #fbe69d;" id="detail-asal-putri">-</div>
+            </div>
+          </div>
+          <div class="detail-slide">
+            <img id="detail-img-putra" class="detail-foto-img" alt="Foto Calon Pratama Putra">
+            <div class="slide-caption">
+              <div class="slide-caption-role">Calon Pratama Putra</div>
+              <div class="slide-caption-nama" id="detail-nama-putra">-</div>
+              <div style="font-size: 11px; color: #fbe69d;" id="detail-asal-putra">-</div>
+            </div>
+          </div>
+        </div>
+        <div class="slider-dots" id="detail-dots">
+          <div class="slider-dot aktif" data-slide="0"></div>
+          <div class="slider-dot" data-slide="1"></div>
+        </div>
+      </div>
+
+      <div class="detail-badan">
+        <div class="seksi-detail" id="seksi-visi">
+          <h3 class="seksi-judul">🌟 Visi</h3>
+          <p class="seksi-isi" id="detail-teks-visi">-</p>
+        </div>
+
+        <div class="seksi-detail" id="seksi-misi">
+          <h3 class="seksi-judul">🎯 Misi</h3>
+          <ol class="seksi-daftar" id="detail-daftar-misi"></ol>
+        </div>
+
+        <div class="seksi-detail" id="seksi-progja">
+          <h3 class="seksi-judul">📋 Program Kerja Unggulan</h3>
+          <ol class="seksi-daftar" id="detail-daftar-progja"></ol>
+        </div>
+      </div>
+
+      <div class="detail-bawah-sticky">
+        <button id="btn-pilih-dari-detail" class="btn btn-utama btn-blok">
+          Pilih Pasangan Ini
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIGHTBOX FOTO PENUH -->
+  <div id="modal-lightbox" class="lightbox-modal" style="display: none;">
+    <img id="lightbox-img" class="lightbox-img" alt="Foto Calon Pramuka Ukuran Penuh">
+    <div class="lightbox-info">
+      <div id="lightbox-nama" style="font-weight: 800; font-size: 15px;">Nama Calon</div>
+      <div id="lightbox-peran" style="color: var(--aksen); font-size: 12px;">Calon Pratama</div>
+      <div style="color: rgba(255, 255, 255, 0.7); font-size: 11px; margin-top: 4px;">Ketuk di mana saja untuk menutup</div>
+    </div>
+  </div>
+
+  <!-- BOTTOM SHEET KONFIRMASI PEMILIHAN -->
+  <div id="modal-konfirmasi" class="sheet-overlay" style="display: none;">
+    <div class="sheet-konten">
+      <div class="sheet-pegangan"></div>
+      
+      <div style="font-size: 28px;">🗳️</div>
+      <h3 style="font-size: 18px; font-weight: 900; color: var(--utama);">Konfirmasi Pilihan Suaramu</h3>
+      <p style="font-size: 14px; color: var(--teks-pudar);" id="sheet-teks-pertanyaan">
+        Kamu memilih No. 01: [nama putri] & [nama putra]. Yakin?
+      </p>
+
+      <div class="sheet-foto-duo">
+        <img id="sheet-foto-putri" class="sheet-foto-item" alt="Putri">
+        <img id="sheet-foto-putra" class="sheet-foto-item" alt="Putra">
+      </div>
+
+      <div style="font-size: 12px; color: var(--bahaya); font-weight: 600;">
+        Pilihan tidak dapat diubah setelah dikirimkan.
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 4px;">
+        <button id="btn-kirim-pilihan-final" class="btn btn-utama btn-blok">
+          Ya, Kirim
+        </button>
+        <button id="btn-batal-konfirmasi" class="btn btn-sekunder btn-blok">
+          Ubah
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="./config.js"></script>
+  <script src="./app.js"></script>
+  <script src="./pemilih.js"></script>
+</body>
+</html>
