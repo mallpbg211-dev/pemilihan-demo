@@ -100,6 +100,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnRefreshToken = document.getElementById('btn-refresh-token');
   const btnCetakSlipKupon = document.getElementById('btn-cetak-slip-kupon');
   const btnEksporCsvToken = document.getElementById('btn-ekspor-csv-token');
+  const btnEksporPdfKupon = document.getElementById('btn-ekspor-pdf-kupon');
+  const selectBatchEksporPdf = document.getElementById('select-batch-ekspor-pdf');
+  const kotakProgresPdf = document.getElementById('kotak-progres-pdf');
+  const teksProgresPdf = document.getElementById('teks-progres-pdf');
+  const persenProgresPdf = document.getElementById('persen-progres-pdf');
+  const barProgresPdf = document.getElementById('bar-progres-pdf');
+  const wadahAksiUnduhManual = document.getElementById('wadah-aksi-unduh-manual');
   const wadahCetakKupon = document.getElementById('wadah-cetak-kupon');
   const gridKuponCetak = document.getElementById('grid-kupon-cetak');
 
@@ -704,7 +711,581 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await panggilAdminRPC('admin_daftar_token');
       daftarTokenCache = Array.isArray(data) ? data : [];
       renderTabelToken();
+      perbaruiPilihanBatchEksporPdf();
     } catch (e) {}
+  }
+
+  function perbaruiPilihanBatchEksporPdf() {
+    if (!selectBatchEksporPdf) return;
+    const nilaiLama = selectBatchEksporPdf.value;
+    const batchSet = new Set();
+    daftarTokenCache.forEach(t => {
+      if (t.batch && t.batch.trim()) {
+        batchSet.add(t.batch.trim());
+      }
+    });
+
+    const daftarBatch = Array.from(batchSet).sort();
+    selectBatchEksporPdf.innerHTML = '<option value="__SEMUA__">Semua Batch (Token Aktif)</option>';
+    daftarBatch.forEach(b => {
+      const opt = document.createElement('option');
+      opt.value = b;
+      opt.textContent = `Batch: ${b}`;
+      selectBatchEksporPdf.appendChild(opt);
+    });
+
+    if (daftarBatch.includes(nilaiLama) || nilaiLama === '__SEMUA__') {
+      selectBatchEksporPdf.value = nilaiLama;
+    }
+  }
+
+  // TAMPILAN FORMAT TOKEN 4 KARAKTER TERPISAH STRIP (HANYA UNTUK TAMPILAN)
+  function formatTampilanToken4Karakter(kode) {
+    if (!kode) return '';
+    const bersih = String(kode).replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+    if (!bersih) return kode;
+    const kelompok = bersih.match(/.{1,4}/g);
+    return kelompok ? kelompok.join('-') : bersih;
+  }
+
+  // FUNGSI BANTU CANVAS: GAMBAR ROUNDED RECTANGLE MANUAL (TANPA DEPENDENSI BROWSER)
+  function drawManualRoundRect(ctx, x, y, width, height, radius, fill, stroke) {
+    let r = radius;
+    if (typeof r === 'number') {
+      r = { tl: r, tr: r, br: r, bl: r };
+    } else {
+      r = Object.assign({ tl: 0, tr: 0, br: 0, bl: 0 }, r);
+    }
+    ctx.beginPath();
+    ctx.moveTo(x + r.tl, y);
+    ctx.lineTo(x + width - r.tr, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + r.tr);
+    ctx.lineTo(x + width, y + height - r.br);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - r.br, y + height);
+    ctx.lineTo(x + r.bl, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - r.bl);
+    ctx.lineTo(x, y + r.tl);
+    ctx.quadraticCurveTo(x, y, x + r.tl, y);
+    ctx.closePath();
+    if (fill) ctx.fill();
+    if (stroke) ctx.stroke();
+  }
+
+  // FUNGSI BANTU CANVAS: GAMBAR PATH BINTANG
+  function drawStarPath(ctx, cx, cy, spikes, outerRadius, innerRadius) {
+    let rot = (Math.PI / 2) * 3;
+    let x = cx;
+    let y = cy;
+    const step = Math.PI / spikes;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - outerRadius);
+    for (let i = 0; i < spikes; i++) {
+      x = cx + Math.cos(rot) * outerRadius;
+      y = cy + Math.sin(rot) * outerRadius;
+      ctx.lineTo(x, y);
+      rot += step;
+      x = cx + Math.cos(rot) * innerRadius;
+      y = cy + Math.sin(rot) * innerRadius;
+      ctx.lineTo(x, y);
+      rot += step;
+    }
+    ctx.lineTo(cx, cy - outerRadius);
+    ctx.closePath();
+  }
+
+  // GAMBAR 1 KUPON KE CANVAS (UKURAN 566 x 320 px)
+  function gambarKuponKeCanvas(ctx, x, y, w, h, t, config, colors, isDemo) {
+    const { warnaUtama, warnaAksen, warnaLatar, warnaTeks, warnaPudar } = colors;
+
+    // 1. Latar Krem Kupon
+    ctx.fillStyle = warnaLatar;
+    drawManualRoundRect(ctx, x, y, w, h, 14, true, false);
+
+    // 2. Bingkai Emas Tipis Di Dalam
+    ctx.strokeStyle = warnaAksen;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([]);
+    drawManualRoundRect(ctx, x + 3, y + 3, w - 6, h - 6, 11, false, true);
+
+    // 3. Garis Potong Putus-Putus Luar
+    ctx.strokeStyle = warnaUtama;
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([8, 6]);
+    drawManualRoundRect(ctx, x, y, w, h, 14, false, true);
+    ctx.setLineDash([]);
+
+    // 4. Pita Judul Atas
+    ctx.fillStyle = warnaUtama;
+    drawManualRoundRect(ctx, x + 3, y + 3, w - 6, 42, { tl: 11, tr: 11, br: 0, bl: 0 }, true, false);
+
+    // Ikon Bintang di Pita Kiri
+    drawStarPath(ctx, x + 24, y + 24, 5, 9, 4.5);
+    ctx.fillStyle = '#fbe69d';
+    ctx.fill();
+
+    // Nama Acara
+    const judulAcara = (config.NAMA_ACARA || 'PEMILIHAN PRATAMA PRAMUKA').toUpperCase();
+    ctx.font = 'bold 15px sans-serif';
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(judulAcara, x + 40, y + 24);
+
+    // Batch Badge di Kanan
+    if (t.batch && t.batch.trim()) {
+      ctx.font = 'bold 12px sans-serif';
+      ctx.fillStyle = '#fbe69d';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(t.batch.trim(), x + w - 16, y + 24);
+    }
+
+    // 5. Label "KODE TOKEN KAMU"
+    ctx.font = 'bold 11px sans-serif';
+    ctx.fillStyle = warnaPudar;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('KODE TOKEN KAMU', x + w / 2, y + 70);
+
+    // 6. Kotak Putih Berbingkai Token
+    const boxW = 390;
+    const boxH = 66;
+    const boxX = x + (w - boxW) / 2;
+    const boxY = y + 86;
+
+    ctx.fillStyle = '#ffffff';
+    drawManualRoundRect(ctx, boxX, boxY, boxW, boxH, 8, true, false);
+    ctx.strokeStyle = warnaAksen;
+    ctx.lineWidth = 2;
+    drawManualRoundRect(ctx, boxX, boxY, boxW, boxH, 8, false, true);
+
+    // 7. Kode Token Monospace Besar (Ukuran Menyesuaikan Otomatis)
+    const kodeTampil = formatTampilanToken4Karakter(t.kode);
+    let fontSize = 36;
+    ctx.font = `bold ${fontSize}px monospace`;
+    while (ctx.measureText(kodeTampil).width > 360 && fontSize > 16) {
+      fontSize -= 2;
+      ctx.font = `bold ${fontSize}px monospace`;
+    }
+    ctx.fillStyle = warnaUtama;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(kodeTampil, x + w / 2, boxY + boxH / 2);
+
+    // 8. Petunjuk Singkat
+    ctx.font = 'bold 13px sans-serif';
+    ctx.fillStyle = warnaTeks;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('1. Buka alamat di bawah.  2. Ketik kode ini.  3. Pilih calon pilihanmu.', x + w / 2, y + 178);
+
+    // 9. Area Footer Bawah
+    ctx.fillStyle = 'rgba(91, 58, 30, 0.05)';
+    drawManualRoundRect(ctx, x + 3, y + 204, w - 6, 113, { tl: 0, tr: 0, br: 11, bl: 11 }, true, false);
+    ctx.strokeStyle = 'rgba(91, 58, 30, 0.18)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x + 3, y + 204);
+    ctx.lineTo(x + w - 3, y + 204);
+    ctx.stroke();
+
+    // 10. Alamat Web Jelas & Besar
+    const alamatWeb = config.ALAMAT_WEB || (typeof window !== 'undefined' ? window.location.origin : '');
+    ctx.font = 'bold 22px sans-serif';
+    ctx.fillStyle = warnaUtama;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(alamatWeb, x + w / 2, y + 242);
+
+    // 11. Catatan Kecil
+    ctx.font = 'italic 12px sans-serif';
+    ctx.fillStyle = warnaPudar;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Satu kode untuk satu suara. Jangan dibagikan ya!', x + w / 2, y + 282);
+
+    // 12. Cap Miring "PERCOBAAN" Bila Mode Demo
+    if (isDemo) {
+      ctx.save();
+      ctx.translate(x + w / 2, y + h / 2);
+      ctx.rotate(-15 * Math.PI / 180);
+      ctx.strokeStyle = 'rgba(198, 40, 40, 0.38)';
+      ctx.fillStyle = 'rgba(198, 40, 40, 0.38)';
+      ctx.lineWidth = 3;
+      ctx.setLineDash([8, 6]);
+      drawManualRoundRect(ctx, -130, -26, 260, 52, 8, false, true);
+      ctx.font = '900 28px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('PERCOBAAN', 0, 0);
+      ctx.restore();
+    }
+  }
+
+  // GAMBAR 1 HALAMAN A4 (1240 x 1754 px) BERISI HINGGA 10 KUPON (2 KOLOM X 5 BARIS)
+  function gambarHalamanA4(daftarKupon10, config, colors, isDemo) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1240;
+    canvas.height = 1754;
+    const ctx = canvas.getContext('2d');
+
+    // Latar Putih Bersih Kertas A4
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, 1240, 1754);
+
+    const startX = 47;
+    const startY = 47;
+    const colWidth = 566;
+    const rowHeight = 320;
+    const gapX = 14;
+    const gapY = 15;
+
+    // Gambar Garis Potong Putus-Putus Antar Kupon
+    ctx.strokeStyle = '#b8a694';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([8, 6]);
+
+    // Garis Vertikal Antar Kolom
+    const midX = startX + colWidth + gapX / 2;
+    ctx.beginPath();
+    ctx.moveTo(midX, startY - 10);
+    ctx.lineTo(midX, startY + 5 * rowHeight + 4 * gapY + 10);
+    ctx.stroke();
+
+    // Garis Horizontal Antar Baris
+    for (let r = 1; r < 5; r++) {
+      const midY = startY + r * rowHeight + (r - 0.5) * gapY;
+      ctx.beginPath();
+      ctx.moveTo(startX - 10, midY);
+      ctx.lineTo(startX + 2 * colWidth + gapX + 10, midY);
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
+
+    // Gambar Setiap Kupon
+    daftarKupon10.forEach((t, idx) => {
+      const col = idx % 2;
+      const row = Math.floor(idx / 2);
+      const x = startX + col * (colWidth + gapX);
+      const y = startY + row * (rowHeight + gapY);
+      gambarKuponKeCanvas(ctx, x, y, colWidth, rowHeight, t, config, colors, isDemo);
+    });
+
+    return canvas;
+  }
+
+  // UBAH CANVAS JADI JPEG BYTES (Uint8Array, KUALITAS 0.85)
+  function canvasKeJpegBytes(canvas) {
+    return new Promise((resolve, reject) => {
+      canvas.toBlob(blob => {
+        if (!blob) {
+          return reject(new Error('Gagal mengonversi canvas ke gambar JPEG.'));
+        }
+        blob.arrayBuffer()
+          .then(buf => resolve(new Uint8Array(buf)))
+          .catch(reject);
+      }, 'image/jpeg', 0.85);
+    });
+  }
+
+  // SUSUN FILE PDF MURNI DARI ARRAY JPEG BYTES (STANDAR PDF 1.4)
+  function susunPdfDariJpeg(pagesJpegBytes) {
+    const P = pagesJpegBytes.length;
+    const N = 2 + P * 3;
+    const offsets = new Array(N + 1);
+    const chunks = [];
+    let currentOffset = 0;
+
+    function pushText(str) {
+      const bytes = new TextEncoder().encode(str);
+      chunks.push(bytes);
+      currentOffset += bytes.length;
+    }
+
+    function pushBytes(u8) {
+      chunks.push(u8);
+      currentOffset += u8.length;
+    }
+
+    // Header PDF 1.4
+    pushText("%PDF-1.4\n%\xE2\xE3\xCF\xD3\n");
+
+    // 1 0 obj: Catalog
+    offsets[1] = currentOffset;
+    pushText("1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n");
+
+    // 2 0 obj: Pages
+    offsets[2] = currentOffset;
+    const kids = [];
+    for (let k = 0; k < P; k++) {
+      kids.push(`${3 + k * 3} 0 R`);
+    }
+    pushText(`2 0 obj\n<< /Type /Pages /Kids [${kids.join(' ')}] /Count ${P} >>\nendobj\n`);
+
+    // Objek Per Halaman
+    for (let k = 0; k < P; k++) {
+      const pageObjId = 3 + k * 3;
+      const contentObjId = 4 + k * 3;
+      const imageObjId = 5 + k * 3;
+      const jpeg = pagesJpegBytes[k];
+
+      // Page Object (Ukuran 595 x 842 pt A4)
+      offsets[pageObjId] = currentOffset;
+      pushText(`${pageObjId} 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /XObject << /Im0 ${imageObjId} 0 R >> /ProcSet [/PDF /ImageC] >> /Contents ${contentObjId} 0 R >>\nendobj\n`);
+
+      // Content Stream Object
+      offsets[contentObjId] = currentOffset;
+      const contentStr = "q 595 0 0 842 0 0 cm /Im0 Do Q";
+      pushText(`${contentObjId} 0 obj\n<< /Length ${contentStr.length} >>\nstream\n${contentStr}\nendstream\nendobj\n`);
+
+      // Image XObject Object
+      offsets[imageObjId] = currentOffset;
+      pushText(`${imageObjId} 0 obj\n<< /Type /XObject /Subtype /Image /Width 1240 /Height 1754 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpeg.length} >>\nstream\n`);
+      pushBytes(jpeg);
+      pushText("\nendstream\nendobj\n");
+    }
+
+    // Cross-Reference Table (xref)
+    const xrefOffset = currentOffset;
+    let xref = `xref\n0 ${N + 1}\n0000000000 65535 f \r\n`;
+    for (let id = 1; id <= N; id++) {
+      const offStr = String(offsets[id]).padStart(10, '0');
+      xref += `${offStr} 00000 n \r\n`;
+    }
+    xref += `trailer\n<< /Size ${N + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF\n`;
+    pushText(xref);
+
+    return new Blob(chunks, { type: 'application/pdf' });
+  }
+
+  // PEMICU UNDUHAN BLOB PDF DENGAN TOMBOL CADANGAN UNTUK HP
+  function unduhBlobPdf(blob, namaFile) {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = namaFile;
+    link.rel = 'noopener';
+    document.body.appendChild(link);
+    try {
+      link.click();
+    } catch (e) {}
+    document.body.removeChild(link);
+
+    // Sediakan tombol unduh manual di layar agar pengguna HP bisa langsung mengetuk
+    if (wadahAksiUnduhManual) {
+      wadahAksiUnduhManual.style.display = 'block';
+      wadahAksiUnduhManual.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; background: #ffffff; padding: 10px 14px; border-radius: var(--radius-sm); border: 1.5px solid var(--sukses);">
+          <div style="font-size: 13px; font-weight: 700; color: var(--sukses);">
+            ✓ File PDF siap: <strong>${namaFile}</strong>
+          </div>
+          <div style="display: flex; gap: 6px;">
+            <a href="${url}" download="${namaFile}" class="btn btn-utama" style="min-height: 32px; padding: 4px 12px; font-size: 12px; text-decoration: none;">
+              📥 Unduh PDF
+            </a>
+            <a href="${url}" target="_blank" class="btn btn-sekunder" style="min-height: 32px; padding: 4px 10px; font-size: 12px; text-decoration: none;">
+              Buka di Tab Baru
+            </a>
+          </div>
+        </div>
+      `;
+    }
+
+    // Cabut URL setelah 3 menit agar memori HP bersih
+    setTimeout(() => {
+      try { URL.revokeObjectURL(url); } catch (e) {}
+    }, 180000);
+  }
+
+  // EKSEKUSI PEMBUATAN PDF PER BAGIAN (MAKS 20 HALAMAN / 200 KUPON PER FILE)
+  async function prosesEksporBagianPdf(tokenBagian, partIdx, totalParts, batchBersih, tanggal, onSelesaiBagian) {
+    const totalHalaman = Math.ceil(tokenBagian.length / 10);
+    const config = window.CONFIG || {};
+    const styles = getComputedStyle(document.documentElement);
+    const colors = {
+      warnaUtama: styles.getPropertyValue('--utama').trim() || '#5b3a1e',
+      warnaAksen: styles.getPropertyValue('--aksen').trim() || '#c59b27',
+      warnaLatar: styles.getPropertyValue('--latar').trim() || '#fbf6ea',
+      warnaTeks: styles.getPropertyValue('--teks').trim() || '#2a2118',
+      warnaPudar: styles.getPropertyValue('--teks-pudar').trim() || '#7c6a58'
+    };
+    const isDemo = (config.MODE === 'demo' || config.MODE === 'tiruan') || apakahModeTiruan();
+
+    const pagesJpegBytes = [];
+
+    for (let p = 0; p < totalHalaman; p++) {
+      const nomorHalaman = p + 1;
+      const persen = Math.round((nomorHalaman / totalHalaman) * 100);
+
+      if (kotakProgresPdf && teksProgresPdf && persenProgresPdf && barProgresPdf) {
+        kotakProgresPdf.style.display = 'block';
+        teksProgresPdf.style.color = 'var(--utama)';
+        teksProgresPdf.textContent = totalParts > 1
+          ? `Bagian ${partIdx + 1}/${totalParts}: Membuat halaman ${nomorHalaman} dari ${totalHalaman}...`
+          : `Membuat halaman ${nomorHalaman} dari ${totalHalaman}...`;
+        persenProgresPdf.textContent = `${persen}%`;
+        barProgresPdf.style.width = `${persen}%`;
+      }
+
+      // Beri jeda singkat agar progres ter-render di HP dan UI tidak membeku
+      await new Promise(r => setTimeout(r, 0));
+
+      const sepuluhKupon = tokenBagian.slice(p * 10, p * 10 + 10);
+      let canvas = gambarHalamanA4(sepuluhKupon, config, colors, isDemo);
+      const jpegBytes = await canvasKeJpegBytes(canvas);
+      pagesJpegBytes.push(jpegBytes);
+
+      // Lepaskan referensi canvas agar GC dapat membebaskan memori
+      canvas.width = 1;
+      canvas.height = 1;
+      canvas = null;
+
+      await new Promise(r => setTimeout(r, 0));
+    }
+
+    if (teksProgresPdf) {
+      teksProgresPdf.textContent = 'Menyusun file PDF...';
+    }
+    await new Promise(r => setTimeout(r, 0));
+
+    // Susun PDF murni
+    const pdfBlob = susunPdfDariJpeg(pagesJpegBytes);
+    const namaFile = totalParts > 1
+      ? `kupon-${batchBersih}-${tanggal}-bagian-${partIdx + 1}.pdf`
+      : `kupon-${batchBersih}-${tanggal}.pdf`;
+
+    unduhBlobPdf(pdfBlob, namaFile);
+
+    if (teksProgresPdf) {
+      teksProgresPdf.textContent = totalParts > 1
+        ? `✓ Bagian ${partIdx + 1} dari ${totalParts} (${tokenBagian.length} kupon) selesai diunduh!`
+        : `✓ Selesai! File ${namaFile} (${tokenBagian.length} kupon) berhasil diunduh.`;
+    }
+
+    if (onSelesaiBagian) {
+      onSelesaiBagian();
+    }
+  }
+
+  // EVENT LISTENER UTAMA TOMBOL EKSPOR PDF KUPON
+  if (btnEksporPdfKupon) {
+    btnEksporPdfKupon.addEventListener('click', async () => {
+      // 1. Kunci tombol selama proses
+      btnEksporPdfKupon.disabled = true;
+      const teksAsli = btnEksporPdfKupon.innerHTML;
+      btnEksporPdfKupon.textContent = 'Memuat Data...';
+
+      if (kotakProgresPdf) {
+        kotakProgresPdf.style.display = 'block';
+        teksProgresPdf.style.color = 'var(--utama)';
+        teksProgresPdf.textContent = 'Menyiapkan data token...';
+        persenProgresPdf.textContent = '0%';
+        barProgresPdf.style.width = '0%';
+        if (wadahAksiUnduhManual) wadahAksiUnduhManual.style.display = 'none';
+      }
+
+      try {
+        const dataFresh = await panggilAdminRPC('admin_daftar_token');
+        if (Array.isArray(dataFresh)) {
+          daftarTokenCache = dataFresh;
+          renderTabelToken();
+          perbaruiPilihanBatchEksporPdf();
+        }
+
+        const selectedBatch = selectBatchEksporPdf ? selectBatchEksporPdf.value : '__SEMUA__';
+
+        // 2. Filter token aktif dan pastikan kode token unik (tidak boleh muncul lebih dari sekali)
+        const seen = new Set();
+        const tokenSiapCetak = [];
+        daftarTokenCache.forEach(t => {
+          if (t.status === 'aktif') {
+            if (selectedBatch === '__SEMUA__' || (t.batch && t.batch.trim() === selectedBatch)) {
+              if (!seen.has(t.kode)) {
+                seen.add(t.kode);
+                tokenSiapCetak.push(t);
+              }
+            }
+          }
+        });
+
+        // 3. Bila daftar kupon kosong, tampilkan pesan dan jangan membuat file
+        if (tokenSiapCetak.length === 0) {
+          alert('Tidak ada token untuk dibuat');
+          if (kotakProgresPdf) kotakProgresPdf.style.display = 'none';
+          btnEksporPdfKupon.disabled = false;
+          btnEksporPdfKupon.innerHTML = teksAsli;
+          return;
+        }
+
+        // 4. Urutan kupon diacak (Fisher-Yates) sebelum ditata
+        const tokenDiacak = acakFisherYates(tokenSiapCetak);
+
+        // 5. Format nama file (kupon-{batch}-{tanggal}.pdf, huruf kecil tanpa spasi)
+        const pad = n => String(n).padStart(2, '0');
+        const now = new Date();
+        const tanggal = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+        const batchBersih = (selectedBatch === '__SEMUA__' ? 'semua' : selectedBatch)
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '') || 'batch';
+
+        // 6. Pecah per 200 kupon (maksimal 20 halaman per file PDF)
+        const parts = [];
+        for (let i = 0; i < tokenDiacak.length; i += 200) {
+          parts.push(tokenDiacak.slice(i, i + 200));
+        }
+
+        let currentPartIdx = 0;
+
+        const jalankanPart = async (idx) => {
+          await prosesEksporBagianPdf(parts[idx], idx, parts.length, batchBersih, tanggal, () => {
+            if (idx + 1 < parts.length) {
+              // Jika ada bagian berikutnya, sediakan tombol lanjut
+              if (wadahAksiUnduhManual) {
+                const btnLanjut = document.createElement('button');
+                btnLanjut.className = 'btn btn-aksen';
+                btnLanjut.style.cssText = 'width: 100%; margin-top: 8px; font-weight: 800; min-height: 38px;';
+                btnLanjut.textContent = `▶ Unduh Bagian Berikutnya (${idx + 2} dari ${parts.length})`;
+                btnLanjut.addEventListener('click', () => {
+                  btnLanjut.disabled = true;
+                  btnLanjut.textContent = 'Memproses Bagian Berikutnya...';
+                  jalankanPart(idx + 1);
+                });
+                wadahAksiUnduhManual.appendChild(btnLanjut);
+              }
+            } else {
+              // Selesai seluruh bagian
+              btnEksporPdfKupon.disabled = false;
+              btnEksporPdfKupon.innerHTML = teksAsli;
+            }
+          });
+        };
+
+        await jalankanPart(currentPartIdx);
+
+      } catch (err) {
+        if (kotakProgresPdf && teksProgresPdf) {
+          teksProgresPdf.textContent = 'Gagal membuat file PDF: ' + (err.message || 'Terjadi kesalahan');
+          teksProgresPdf.style.color = 'var(--bahaya)';
+          if (wadahAksiUnduhManual) {
+            wadahAksiUnduhManual.style.display = 'block';
+            wadahAksiUnduhManual.innerHTML = `
+              <button type="button" id="btn-coba-lagi-pdf" class="btn btn-sekunder" style="min-height: 34px; padding: 4px 14px; font-size: 13px;">
+                🔄 Coba Lagi
+              </button>
+            `;
+            const btnCobaLagi = document.getElementById('btn-coba-lagi-pdf');
+            if (btnCobaLagi) {
+              btnCobaLagi.addEventListener('click', () => {
+                btnEksporPdfKupon.click();
+              });
+            }
+          }
+        }
+        btnEksporPdfKupon.disabled = false;
+        btnEksporPdfKupon.innerHTML = teksAsli;
+      }
+    });
   }
 
   function renderTabelToken() {

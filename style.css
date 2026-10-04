@@ -1097,21 +1097,204 @@ html, body {
   z-index: 5;
 }
 
-/* KUPON CETAK 10 PER A4 (2 KOLOM X 5 BARIS) */
-.halaman-cetak-kupon {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
+/* PENGATURAN HALAMAN CETAK KUPON A4 */
+@page {
+  size: A4;
+  margin: 8mm;
 }
 
-.kupon-satuan {
-  border: 1.5px dashed #2a2118;
-  border-radius: 6px;
-  padding: 10px;
-  background: #fff;
-  color: #000;
-  text-align: center;
+/* WADAH CETAK MULTI-HALAMAN KUPON (10 PER LEMBAR A4: 2 KOLOM X 5 BARIS) */
+.lembar-a4-kupon {
+  width: 100%;
+  max-width: 194mm;
+  height: 279mm;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  gap: 3mm;
+  box-sizing: border-box;
+  page-break-after: always;
+  break-after: page;
+}
+
+.lembar-a4-kupon:last-child {
+  page-break-after: auto;
+  break-after: auto;
+}
+
+/* DESAIN KARTU KUPON (UKURAN ~105 X 57 MM) */
+.kartu-kupon-cetak {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  max-height: 53.5mm;
+  background-color: var(--latar);
+  border: 1.5px dashed var(--utama);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0;
+  color: var(--teks);
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
   page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+.kartu-kupon-cetak-inner {
+  position: absolute;
+  inset: 1.5px;
+  border: 1px solid var(--aksen);
+  border-radius: 6px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.kupon-pita-judul {
+  background-color: var(--utama);
+  color: #ffffff;
+  padding: 3px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+  z-index: 1;
+}
+
+.kupon-pita-kiri {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  overflow: hidden;
+}
+
+.kupon-pita-icon {
+  width: 13px;
+  height: 13px;
+  color: var(--aksen-terang);
+  flex-shrink: 0;
+}
+
+.kupon-pita-judul-teks {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #ffffff;
+}
+
+.kupon-pita-batch {
+  font-size: 8.5px;
+  font-weight: 700;
+  color: var(--aksen-terang);
+  white-space: nowrap;
+}
+
+.kupon-badan {
+  padding: 3px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  z-index: 1;
+}
+
+.kupon-label-token {
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--teks-pudar);
+  margin-bottom: 2px;
+}
+
+.kupon-kotak-token {
+  background-color: #ffffff;
+  border: 1.5px solid var(--aksen);
+  border-radius: 5px;
+  padding: 2px 10px;
+  width: 90%;
+  max-width: 210px;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+.kupon-teks-token {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: var(--utama);
+  line-height: 1.2;
+}
+
+.kupon-petunjuk {
+  font-size: 7.5px;
+  font-weight: 600;
+  color: var(--teks);
+  margin-top: 2.5px;
+  line-height: 1.2;
+}
+
+.kupon-footer {
+  background-color: rgba(91, 58, 30, 0.05);
+  border-top: 1px solid rgba(91, 58, 30, 0.15);
+  padding: 2.5px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+  z-index: 1;
+}
+
+.kupon-alamat-web {
+  font-size: 10.5px;
+  font-weight: 900;
+  color: var(--utama);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.kupon-catatan {
+  font-size: 7px;
+  color: var(--teks-pudar);
+  font-style: italic;
+  white-space: nowrap;
+}
+
+.cap-kupon-percobaan {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-15deg);
+  border: 2px dashed rgba(198, 40, 40, 0.45);
+  color: rgba(198, 40, 40, 0.45);
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  padding: 2px 12px;
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 2;
+  white-space: nowrap;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
 }
 
 @media print {
@@ -1128,15 +1311,22 @@ html, body {
     max-width: 100% !important;
     padding: 0 !important;
   }
-  .halaman-cetak-kupon {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 6px !important;
+  /* Saat mencetak kupon, sembunyikan dokumen lain seperti berita acara */
+  body.mode-cetak-kupon-pdf .dokumen-cetak:not(#wadah-cetak-kupon) {
+    display: none !important;
   }
-  .kupon-satuan {
-    height: calc((100vh - 40px) / 5) !important;
-    box-sizing: border-box !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: center !important;
+  body.mode-cetak-kupon-pdf #wadah-cetak-kupon {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  body.mode-cetak-kupon-pdf .lembar-a4-kupon {
+    display: grid !important;
+  }
+  /* Bila bukan mode cetak kupon, sembunyikan wadah-cetak-kupon */
+  body:not(.mode-cetak-kupon-pdf) #wadah-cetak-kupon {
+    display: none !important;
   }
 }

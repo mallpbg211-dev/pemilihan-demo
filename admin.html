@@ -459,6 +459,47 @@
           </form>
         </div>
 
+        <!-- PANEL EKSPOR PDF KUPON (CANVAS PURE JS KE PDF) -->
+        <div style="background: var(--kartu); border: 1.5px solid var(--aksen); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 20px; box-shadow: var(--bayangan);">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;">
+            <div>
+              <h4 style="font-size: 15px; font-weight: 800; color: var(--utama); margin-bottom: 2px;">
+                📄 Ekspor PDF Kupon (10 per Lembar A4)
+              </h4>
+              <p style="font-size: 12px; color: var(--teks-pudar);">
+                Pembuatan file .pdf langsung di browser tanpa jendela cetak. Ramah HP dan hemat memori.
+              </p>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <label for="select-batch-ekspor-pdf" style="font-size: 12px; font-weight: 700; color: var(--teks);">Pilih Batch:</label>
+                <select id="select-batch-ekspor-pdf" class="form-select" style="height: 38px; padding: 0 10px; font-size: 13px; min-width: 180px;">
+                  <option value="__SEMUA__">Semua Batch (Token Aktif)</option>
+                </select>
+              </div>
+              <button type="button" id="btn-ekspor-pdf-kupon" class="btn btn-utama" style="min-height: 38px; padding: 6px 16px; font-size: 13px; font-weight: 800;">
+                Ekspor PDF
+              </button>
+            </div>
+          </div>
+
+          <!-- KOTAK STATUS & PROGRES EKSPOR PDF -->
+          <div id="kotak-progres-pdf" style="display: none; margin-top: 14px; padding: 12px; background: var(--latar-subtle); border-radius: var(--radius-md); border: 1px solid var(--kartu-border);">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px;">
+              <span id="teks-progres-pdf" style="font-size: 13px; font-weight: 700; color: var(--utama);">
+                Membuat PDF...
+              </span>
+              <span id="persen-progres-pdf" style="font-size: 12px; font-weight: 800; color: var(--utama);">
+                0%
+              </span>
+            </div>
+            <div style="height: 8px; background: rgba(0,0,0,0.08); border-radius: 4px; overflow: hidden;">
+              <div id="bar-progres-pdf" style="width: 0%; height: 100%; background: var(--sukses); transition: width 0.2s;"></div>
+            </div>
+            <div id="wadah-aksi-unduh-manual" style="margin-top: 10px; display: none;"></div>
+          </div>
+        </div>
+
         <!-- FILTER STATUS TOKEN -->
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 10px; flex-wrap: wrap;">
           <div style="display: flex; align-items: center; gap: 10px;">
