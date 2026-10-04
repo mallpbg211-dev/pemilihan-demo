@@ -20,7 +20,7 @@
       </div>
       <div>
         <div class="brand-title" id="judul-acara-header">Hasil Pemilihan</div>
-        <div class="brand-subtitle">Pemilihan Pratama Pramuka</div>
+        <div class="brand-subtitle" id="subjudul-gudep-header">Gugus Depan SMP Negeri 1 Bojongsari</div>
       </div>
     </a>
 
@@ -48,8 +48,11 @@
     </div>
 
     <!-- STATUS BANNER HASIL -->
-    <div id="banner-status-hasil" style="text-align: center; margin-bottom: 16px;">
-      <h1 id="judul-status-hasil" style="font-size: 20px; font-weight: 900; color: var(--utama); margin-bottom: 4px;">
+    <div id="banner-status-hasil" style="text-align: center; margin-bottom: 20px;">
+      <div id="nama-gudep-hasil" style="font-size: 13px; font-weight: 800; color: var(--utama); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">
+        Gugus Depan SMP Negeri 1 Bojongsari
+      </div>
+      <h1 id="judul-status-hasil" style="font-size: 21px; font-weight: 900; color: var(--utama); margin-bottom: 4px;">
         Memuat Data Perolehan...
       </h1>
       <p id="sub-status-hasil" style="font-size: 13px; color: var(--teks-pudar);">
@@ -77,18 +80,18 @@
     <div id="wadah-hasil-terbuka" style="display: none;">
 
       <!-- RINGKASAN METRIK PARTISIPASI -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(95px, 1fr)); gap: 10px; margin-bottom: 20px;">
-        <div style="background: var(--kartu); border: 1px solid var(--kartu-border); border-radius: var(--radius-md); padding: 12px; text-align: center;">
-          <div style="font-size: 11px; color: var(--teks-pudar); font-weight: 700; text-transform: uppercase;">Total Suara Sah</div>
-          <div style="font-size: 22px; font-weight: 900; color: var(--utama); margin-top: 2px;" id="stat-total-suara">0</div>
+      <div class="hasil-ringkasan-grid">
+        <div class="hasil-stat-kartu">
+          <div class="hasil-stat-label">Total Suara Sah</div>
+          <div class="hasil-stat-nilai" id="stat-total-suara">0</div>
         </div>
-        <div style="background: var(--kartu); border: 1px solid var(--kartu-border); border-radius: var(--radius-md); padding: 12px; text-align: center;">
-          <div style="font-size: 11px; color: var(--teks-pudar); font-weight: 700; text-transform: uppercase;">Partisipasi Token</div>
-          <div style="font-size: 15px; font-weight: 800; color: var(--teks); margin-top: 6px;" id="stat-token-terpakai">0 dari 0 token terpakai</div>
+        <div class="hasil-stat-kartu">
+          <div class="hasil-stat-label">Token Terpakai</div>
+          <div class="hasil-stat-nilai" id="stat-token-terpakai">0 / 0</div>
         </div>
-        <div style="background: var(--kartu); border: 1px solid var(--kartu-border); border-radius: var(--radius-md); padding: 12px; text-align: center;">
-          <div style="font-size: 11px; color: var(--teks-pudar); font-weight: 700; text-transform: uppercase;">Persentase Masuk</div>
-          <div style="font-size: 22px; font-weight: 900; color: var(--sukses); margin-top: 2px;" id="stat-persen-partisipasi">0%</div>
+        <div class="hasil-stat-kartu">
+          <div class="hasil-stat-label">Persentase Masuk</div>
+          <div class="hasil-stat-nilai sukses" id="stat-persen-partisipasi">0,0%</div>
         </div>
       </div>
 

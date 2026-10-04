@@ -58,6 +58,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const elJudul = document.getElementById('judul-acara-header');
         if (elJudul) elJudul.textContent = data.nama_acara;
       }
+      const elGudep = document.getElementById('subjudul-gudep-header');
+      if (elGudep && window.CONFIG && window.CONFIG.NAMA_GUDEP) {
+        elGudep.textContent = window.CONFIG.NAMA_GUDEP;
+      }
       pengelolaHitungMundur.aturWaktuServer(
         data.waktu_server,
         data.buka_pada,

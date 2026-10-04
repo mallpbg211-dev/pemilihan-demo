@@ -55,12 +55,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  function formatPersenIndo(angka) {
+    const n = parseFloat(angka) || 0;
+    return n.toFixed(1).replace('.', ',') + '%';
+  }
+
   async function muatPengaturanHeader() {
     try {
       const data = await panggilRPC('ambil_pengaturan');
       if (data.nama_acara) {
         const elJudul = document.getElementById('judul-acara-header');
         if (elJudul) elJudul.textContent = data.nama_acara;
+      }
+      const elGudepHeader = document.getElementById('subjudul-gudep-header');
+      if (elGudepHeader && window.CONFIG && window.CONFIG.NAMA_GUDEP) {
+        elGudepHeader.textContent = window.CONFIG.NAMA_GUDEP;
+      }
+      const elNamaGudepHasil = document.getElementById('nama-gudep-hasil');
+      if (elNamaGudepHasil && window.CONFIG && window.CONFIG.NAMA_GUDEP) {
+        elNamaGudepHasil.textContent = window.CONFIG.NAMA_GUDEP;
       }
       pengelolaHitungMundur.aturWaktuServer(
         data.waktu_server,
@@ -106,11 +119,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const totalSuara = hasil.total_suara || 0;
       const tokenTerpakai = hasil.token_terpakai || 0;
       const tokenTotal = hasil.token_total || 0;
-      const persenPartisipasi = tokenTotal > 0 ? ((tokenTerpakai / tokenTotal) * 100).toFixed(1) : 0;
+      const persenPartisipasiVal = tokenTotal > 0 ? (tokenTerpakai / tokenTotal) * 100 : 0;
 
       statTotalSuara.textContent = totalSuara.toLocaleString('id-ID');
-      statTokenTerpakai.textContent = `${tokenTerpakai} dari ${tokenTotal} token terpakai`;
-      statPersenPartisipasi.textContent = `${persenPartisipasi}%`;
+      statTokenTerpakai.textContent = `${tokenTerpakai} / ${tokenTotal}`;
+      statPersenPartisipasi.textContent = formatPersenIndo(persenPartisipasiVal);
 
       renderGrafik(hasil.paslon || [], totalSuara, hasil.status === 'ditutup' && !hasil.sementara);
 
@@ -146,60 +159,66 @@ document.addEventListener('DOMContentLoaded', () => {
 
     paslonList.forEach(p => {
       const suara = p.suara || 0;
-      // Hindari pembagian dengan nol
-      const persen = totalSuara > 0 ? ((suara / totalSuara) * 100).toFixed(1) : "0.0";
+      const persenVal = totalSuara > 0 ? (suara / totalSuara) * 100 : 0;
+      const persenTeks = formatPersenIndo(persenVal);
+      const suaraTeks = `${suara.toLocaleString('id-ID')} suara`;
+
       const apakahPemenangTunggal = statusTutupFinal && totalSuara > 0 && suara === suaraTertinggi && jumlahPemenang === 1;
       const apakahPemenangSeri = statusTutupFinal && totalSuara > 0 && suara === suaraTertinggi && jumlahPemenang > 1;
 
       const item = document.createElement('div');
       item.className = `bar-hasil-item ${apakahPemenangTunggal ? 'menang' : ''}`;
 
-      const atas = document.createElement('div');
-      atas.className = 'bar-atas';
+      // 1. BARIS ATAS: DUA FOTO BERDAMPINGAN + IDENTITAS PASLON
+      const barisAtas = document.createElement('div');
+      barisAtas.className = 'hasil-baris-atas';
 
-      const namaWrap = document.createElement('div');
-      namaWrap.className = 'bar-nama-wrap';
+      const fotoDuo = document.createElement('div');
+      fotoDuo.className = 'hasil-foto-duo';
 
-      // Dua Foto Pasangan Berukuran Sedang
-      const fotoWrap = document.createElement('div');
-      fotoWrap.className = 'bar-foto-mini-wrap';
       if (p.foto_putri_url) {
-        fotoWrap.innerHTML += `<img src="${p.foto_putri_url}" class="bar-foto-mini" alt="Putri">`;
+        fotoDuo.innerHTML += `<img src="${p.foto_putri_url}" class="hasil-foto-pasangan" alt="Foto Putri">`;
+      } else {
+        fotoDuo.innerHTML += `<div class="hasil-foto-placeholder">Putri</div>`;
       }
+
       if (p.foto_putra_url) {
-        fotoWrap.innerHTML += `<img src="${p.foto_putra_url}" class="bar-foto-mini" alt="Putra">`;
+        fotoDuo.innerHTML += `<img src="${p.foto_putra_url}" class="hasil-foto-pasangan" alt="Foto Putra">`;
+      } else {
+        fotoDuo.innerHTML += `<div class="hasil-foto-placeholder">Putra</div>`;
       }
-      namaWrap.appendChild(fotoWrap);
+      barisAtas.appendChild(fotoDuo);
 
-      const infoNama = document.createElement('div');
-      let labelPemenangBadge = '';
+      const identitas = document.createElement('div');
+      identitas.className = 'hasil-identitas';
+
+      let badgePemenang = '';
       if (apakahPemenangTunggal) {
-        labelPemenangBadge = '<span style="color: var(--aksen); font-size: 13px; font-weight: 900; margin-left: 6px;">★ TERPILIH</span>';
+        badgePemenang = `<div class="badge-terpilih">★ TERPILIH</div>`;
       } else if (apakahPemenangSeri) {
-        labelPemenangBadge = '<span style="color: var(--peringatan); font-size: 13px; font-weight: 900; margin-left: 6px;">(Seri)</span>';
+        badgePemenang = `<div class="badge-seri">⚖ SUARA SEIMBANG</div>`;
       }
 
-      infoNama.innerHTML = `
-        <div style="font-weight: 800; font-size: 15px; color: var(--teks);">
-          No. ${String(p.nomor_urut).padStart(2, '0')} — ${p.nama_putri} & ${p.nama_putra}
-          ${labelPemenangBadge}
-        </div>
+      identitas.innerHTML = `
+        ${badgePemenang}
+        <div class="badge-nomor-kecil">No. ${String(p.nomor_urut).padStart(2, '0')}</div>
+        <div class="hasil-nama-paslon">${p.nama_putri} &amp; ${p.nama_putra}</div>
       `;
-      namaWrap.appendChild(infoNama);
-      atas.appendChild(namaWrap);
+      barisAtas.appendChild(identitas);
+      item.appendChild(barisAtas);
 
-      const angkaWrap = document.createElement('div');
-      angkaWrap.style.textAlign = 'right';
-      angkaWrap.innerHTML = `
-        <div style="font-size: 18px; font-weight: 900; color: var(--utama); font-variant-numeric: tabular-nums;">
-          ${persen}%
-        </div>
-        <div style="font-size: 12px; color: var(--teks-pudar); font-variant-numeric: tabular-nums;">
-          ${suara.toLocaleString('id-ID')} suara
-        </div>
+      // 2. BARIS TENGAH: PERSENTASE (KIRI) & JUMLAH SUARA (KANAN)
+      const barisTengah = document.createElement('div');
+      barisTengah.className = 'hasil-baris-tengah';
+      barisTengah.innerHTML = `
+        <span class="hasil-persen-teks">${persenTeks}</span>
+        <span class="hasil-suara-teks">${suaraTeks}</span>
       `;
-      atas.appendChild(angkaWrap);
-      item.appendChild(atas);
+      item.appendChild(barisTengah);
+
+      // 3. BARIS BAWAH: BATANG GRAFIK SELEBAR KARTU PENUH
+      const barisBawah = document.createElement('div');
+      barisBawah.className = 'hasil-baris-bawah';
 
       const track = document.createElement('div');
       track.className = 'bar-track';
@@ -208,12 +227,13 @@ document.addEventListener('DOMContentLoaded', () => {
       fill.className = 'bar-fill';
       fill.style.width = '0%';
       track.appendChild(fill);
-      item.appendChild(track);
+      barisBawah.appendChild(track);
+      item.appendChild(barisBawah);
 
       wadahGrafikPaslon.appendChild(item);
 
       setTimeout(() => {
-        fill.style.width = `${Math.max(parseFloat(persen) || 0, 0.5)}%`;
+        fill.style.width = `${Math.max(persenVal, 0.5)}%`;
       }, 50);
     });
   }

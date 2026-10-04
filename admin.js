@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
     adminAuthActive = sessionStorage.getItem('pramuka_admin_auth_active') === 'true';
 
     if (!adminAuthActive) {
-      adminSubStatus.textContent = 'Terkunci (Masukkan PIN)';
+      if (adminSubStatus) adminSubStatus.textContent = 'Terkunci (Masukkan PIN)';
       seksiLogin.style.display = 'block';
       seksiPanelAdmin.style.display = 'none';
       btnKeluarAdmin.style.display = 'none';
@@ -163,10 +163,10 @@ document.addEventListener('DOMContentLoaded', () => {
     btnKeluarAdmin.style.display = 'inline-flex';
 
     if (apakahModeTiruan()) {
-      adminSubStatus.textContent = 'Mode Tiruan / Demo Aktif';
+      if (adminSubStatus) adminSubStatus.textContent = 'Mode Tiruan / Demo Aktif';
       kotakAksiDemo.style.display = 'block';
     } else {
-      adminSubStatus.textContent = 'Terhubung Supabase (Login Panitia)';
+      if (adminSubStatus) adminSubStatus.textContent = 'Terhubung Supabase (Login Panitia)';
       kotakAksiDemo.style.display = 'none';
     }
 
@@ -514,23 +514,33 @@ document.addEventListener('DOMContentLoaded', () => {
       daftarPaslonCache.forEach(p => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td><strong style="font-size:16px;">0${p.nomor_urut}</strong></td>
-          <td>
-            <strong>${p.nama_putri}</strong><br>
-            <span style="font-size:11px; color:var(--teks-pudar);">${p.asal_putri || '-'}</span>
+          <td><strong style="font-size:16px; white-space:nowrap;">0${p.nomor_urut}</strong></td>
+          <td style="min-width: 150px;">
+            <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
+              ${p.foto_putri_url ? `<img src="${p.foto_putri_url}" style="width: 28px; aspect-ratio: 9/16; object-fit: cover; border-radius: 3px; flex-shrink: 0; border: 1px solid var(--kartu-border);" alt="Putri">` : ''}
+              <div style="flex: 1; min-width: 0; overflow-wrap: anywhere;">
+                <strong style="font-size: 13px;">${p.nama_putri}</strong><br>
+                <span style="font-size:11px; color:var(--teks-pudar);">${p.asal_putri || '-'}</span>
+              </div>
+            </div>
           </td>
-          <td>
-            <strong>${p.nama_putra}</strong><br>
-            <span style="font-size:11px; color:var(--teks-pudar);">${p.asal_putra || '-'}</span>
+          <td style="min-width: 150px;">
+            <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
+              ${p.foto_putra_url ? `<img src="${p.foto_putra_url}" style="width: 28px; aspect-ratio: 9/16; object-fit: cover; border-radius: 3px; flex-shrink: 0; border: 1px solid var(--kartu-border);" alt="Putra">` : ''}
+              <div style="flex: 1; min-width: 0; overflow-wrap: anywhere;">
+                <strong style="font-size: 13px;">${p.nama_putra}</strong><br>
+                <span style="font-size:11px; color:var(--teks-pudar);">${p.asal_putra || '-'}</span>
+              </div>
+            </div>
           </td>
-          <td style="max-width: 200px; font-size: 12px; color: var(--teks-pudar);">
+          <td style="max-width: 200px; font-size: 12px; color: var(--teks-pudar); overflow-wrap: anywhere;">
             <div class="visi-cuplikan">${p.visi}</div>
           </td>
           <td>
-            <span style="color: var(--sukses); font-weight: 700;">Aktif</span>
+            <span style="color: var(--sukses); font-weight: 700; white-space: nowrap;">Aktif</span>
           </td>
           <td>
-            <button class="btn btn-sekunder btn-edit-paslon" data-id="${p.id}" style="min-height: 28px; padding: 2px 8px; font-size: 12px;">
+            <button class="btn btn-sekunder btn-edit-paslon" data-id="${p.id}" style="min-height: 28px; padding: 2px 8px; font-size: 12px; white-space: nowrap;">
               Ubah Data
             </button>
           </td>
@@ -823,13 +833,18 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.fillStyle = '#fbe69d';
     ctx.fill();
 
-    // Nama Acara
+    // Nama Acara & Nama Gudep
     const judulAcara = (config.NAMA_ACARA || 'PEMILIHAN PRATAMA PRAMUKA').toUpperCase();
-    ctx.font = 'bold 15px sans-serif';
-    ctx.fillStyle = '#ffffff';
+    const namaGudep = (config.NAMA_GUDEP || 'GUGUS DEPAN SMP NEGERI 1 BOJONGSARI').toUpperCase();
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
-    ctx.fillText(judulAcara, x + 40, y + 24);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 13px sans-serif';
+    ctx.fillText(judulAcara, x + 40, y + 16);
+
+    ctx.fillStyle = '#fbe69d';
+    ctx.font = 'bold 9.5px sans-serif';
+    ctx.fillText(namaGudep, x + 40, y + 31);
 
     // Batch Badge di Kanan
     if (t.batch && t.batch.trim()) {
@@ -1423,6 +1438,10 @@ document.addEventListener('DOMContentLoaded', () => {
         year: 'numeric'
       });
       rekapNamaAcara.textContent = (peng.nama_acara || 'PEMILIHAN PRATAMA PRAMUKA').toUpperCase();
+      const elRekapGudep = document.getElementById('rekap-nama-gudep');
+      if (elRekapGudep && window.CONFIG && window.CONFIG.NAMA_GUDEP) {
+        elRekapGudep.textContent = window.CONFIG.NAMA_GUDEP.toUpperCase();
+      }
 
       rekapTotalSuara.textContent = (data.total_suara || 0).toLocaleString('id-ID');
       rekapTokenTotal.textContent = ring.token_total || 0;
@@ -1530,5 +1549,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // INISIALISASI
+  const elSubjudulGudep = document.getElementById('subjudul-gudep-header');
+  if (elSubjudulGudep && window.CONFIG && window.CONFIG.NAMA_GUDEP) {
+    elSubjudulGudep.textContent = window.CONFIG.NAMA_GUDEP;
+  }
   cekStatusLogin();
 });
