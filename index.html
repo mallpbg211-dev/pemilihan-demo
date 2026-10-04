@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Bilik Suara - Pemilihan Pratama Pramuka</title>
   <meta name="description" content="Aplikasi e-voting pemilihan pasangan Calon Pratama Pramuka yang ringan, andal, dan ramah anak.">
   <link rel="stylesheet" href="./style.css">
@@ -95,12 +95,12 @@
 
     <!-- TAMPILAN 3: DAFTAR PASANGAN CALON -->
     <section id="layar-pilih" style="display: none;">
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
-        <div>
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+        <div style="min-width: 0;">
           <h2 style="font-size: 19px; font-weight: 800; color: var(--utama);">Pilih Pasangan Calon</h2>
           <p style="font-size: 13px; color: var(--teks-pudar);">Sentuh pasangan nomor urut pilihanmu.</p>
         </div>
-        <button id="btn-ganti-token" class="btn btn-sekunder" style="min-height: 36px; padding: 4px 10px; font-size: 12px;">
+        <button id="btn-ganti-token" class="btn btn-sekunder" style="min-height: 44px; padding: 6px 12px; font-size: 12.5px; white-space: nowrap;">
           Ganti Token
         </button>
       </div>

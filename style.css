@@ -50,7 +50,7 @@
 }
 
 /* RESET & DASAR */
-* {
+*, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -58,6 +58,11 @@
 }
 
 html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
   min-height: 100%;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
   background-color: var(--latar);
@@ -65,26 +70,68 @@ html, body {
   font-size: 16px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* ELEMEN DASAR MAX-WIDTH 100% */
+img, svg, video, canvas, audio, iframe {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+input, button, select, textarea {
+  max-width: 100%;
+  font-family: inherit;
+}
+
+table {
+  max-width: 100%;
+}
+
+/* FLEKSIBILITAS SEMUA ANAK ELEMEN FLEX & GRID AGAR TIDAK MENDORONG LEBAR LAYAR */
+.header-pramuka > *,
+.brand-wrap > *,
+.nav-links > *,
+.info-box > *,
+.info-text-kiri > *,
+.daftar-paslon-grid > *,
+.foto-paslon-duo > *,
+.foto-paslon-item > *,
+.wadah > *,
+.wadah-lebar > *,
+.kartu-token > *,
+.kartu-paslon > *,
+.tabel-pembungkus > *,
+form > * {
+  min-width: 0;
 }
 
 /* BANNER MODE DEMO / TIRUAN */
 .banner-demo {
+  width: 100%;
+  max-width: 100%;
   background: var(--aksen);
   color: #2a2118;
   font-weight: 800;
   font-size: 12px;
   text-align: center;
-  padding: 6px 12px;
+  padding: 8px 16px;
   letter-spacing: 0.5px;
   text-transform: uppercase;
   position: sticky;
   top: 0;
   z-index: 100;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
 }
 
 /* TOP APP BAR */
 .header-pramuka {
+  width: 100%;
+  max-width: 100%;
   background-color: var(--kartu);
   border-bottom: 1px solid var(--kartu-border);
   position: sticky;
@@ -95,6 +142,7 @@ html, body {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  box-sizing: border-box;
 }
 
 .brand-wrap {
@@ -103,11 +151,12 @@ html, body {
   gap: 10px;
   text-decoration: none;
   color: var(--teks);
+  min-width: 0;
 }
 
 .brand-icon {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   background: var(--utama);
   color: #fff;
   border-radius: var(--radius-sm);
@@ -122,20 +171,24 @@ html, body {
   font-weight: 800;
   letter-spacing: -0.2px;
   color: var(--utama);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .brand-subtitle {
   font-size: 11px;
   color: var(--teks-pudar);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .nav-links {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .nav-link {
@@ -143,12 +196,15 @@ html, body {
   font-weight: 600;
   color: var(--teks-pudar);
   text-decoration: none;
-  padding: 6px 10px;
+  padding: 8px 12px;
   border-radius: var(--radius-sm);
   transition: opacity 0.15s ease, background 0.15s ease;
-  min-height: 38px;
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  box-sizing: border-box;
 }
 
 .nav-link:hover, .nav-link.aktif {
@@ -156,17 +212,76 @@ html, body {
   background: var(--latar-subtle);
 }
 
-/* WADAH */
+.nav-links .btn {
+  min-height: 44px;
+  padding: 8px 12px;
+  white-space: nowrap;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+/* RESPONSIVE HEADER UNTUK LAYAR SEMPIT (< 600px) */
+@media (max-width: 599.98px) {
+  .header-pramuka {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 10px 16px;
+    gap: 10px;
+  }
+
+  .brand-wrap {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .brand-title {
+    font-size: 15px;
+    line-height: 1.25;
+  }
+
+  .brand-subtitle {
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .nav-links {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-start;
+  }
+
+  .nav-link,
+  .nav-links .btn {
+    min-height: 44px;
+    padding: 8px 12px;
+    font-size: 12.5px;
+    white-space: nowrap;
+    flex: 0 0 auto;
+  }
+}
+
+/* WADAH UTAMA */
 .wadah {
+  width: 100%;
   max-width: 680px;
   margin: 0 auto;
-  padding: 14px;
+  padding: 16px;
+  box-sizing: border-box;
 }
 
 .wadah-lebar {
+  width: 100%;
   max-width: 1060px;
   margin: 0 auto;
-  padding: 14px;
+  padding: 16px;
+  box-sizing: border-box;
 }
 
 /* INFO BOX & HITUNG MUNDUR */
@@ -209,9 +324,9 @@ html, body {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 48px;
-  padding: 10px 18px;
-  font-size: 15px;
+  min-height: 44px;
+  padding: 10px 16px;
+  font-size: 14.5px;
   font-weight: 700;
   border-radius: var(--radius-md);
   border: none;
@@ -221,6 +336,8 @@ html, body {
   user-select: none;
   touch-action: manipulation;
   transition: transform 0.15s ease, opacity 0.15s ease, background 0.15s ease;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .btn:active:not(:disabled) {
@@ -269,42 +386,50 @@ html, body {
 
 .btn-blok {
   width: 100%;
+  max-width: 100%;
+  min-height: 48px;
 }
 
 /* KARTU TOKEN INPUT */
 .kartu-token {
+  width: 100%;
+  max-width: 480px;
+  margin: 12px auto 20px;
   background: var(--kartu);
   border: 1px solid var(--kartu-border);
   border-radius: var(--radius-xl);
   padding: 24px 18px;
   text-align: center;
   box-shadow: var(--bayangan);
-  margin-top: 8px;
-  margin-bottom: 20px;
+  box-sizing: border-box;
 }
 
 .token-instruksi {
   font-size: 14px;
   color: var(--teks-pudar);
   margin-bottom: 16px;
-  max-width: 440px;
+  max-width: 100%;
   margin-left: auto;
   margin-right: auto;
   line-height: 1.5;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .input-token-wrap {
   position: relative;
-  max-width: 300px;
+  width: 100%;
+  max-width: 100%;
   margin: 0 auto 12px;
 }
 
 .input-token {
   width: 100%;
-  height: 54px;
-  font-size: 22px;
+  max-width: 100%;
+  height: 52px;
+  font-size: clamp(16px, 5.5vw, 20px);
   font-weight: 800;
-  letter-spacing: 3px;
+  letter-spacing: min(0.08em, 2px);
   text-align: center;
   text-transform: uppercase;
   color: var(--teks);
@@ -313,6 +438,14 @@ html, body {
   border-radius: var(--radius-md);
   font-family: inherit;
   transition: border-color 0.2s ease, background 0.2s ease;
+  box-sizing: border-box;
+}
+
+.input-token::placeholder {
+  font-size: clamp(14px, 4.5vw, 17px);
+  letter-spacing: normal;
+  color: var(--teks-pudar);
+  opacity: 0.7;
 }
 
 .input-token:focus {
@@ -806,6 +939,7 @@ html, body {
 
 .sheet-foto-item {
   width: 100px;
+  max-width: 42%;
   aspect-ratio: 9 / 16;
   border-radius: var(--radius-md);
   object-fit: cover;
@@ -975,16 +1109,20 @@ html, body {
 /* TABEL ADMIN */
 .tabel-pembungkus {
   width: 100%;
+  max-width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   background: var(--kartu);
   border: 1px solid var(--kartu-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--bayangan);
   margin-bottom: 20px;
+  box-sizing: border-box;
 }
 
 .tabel-admin {
   width: 100%;
+  min-width: 520px;
   border-collapse: collapse;
   font-size: 13px;
   text-align: left;
@@ -1031,6 +1169,47 @@ html, body {
   align-items: center;
   gap: 4px;
   animation: getar 0.5s infinite;
+}
+
+/* FORMULIR UMUM & ADMIN */
+.form-group {
+  margin-bottom: 14px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--utama);
+  margin-bottom: 6px;
+  overflow-wrap: anywhere;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  width: 100%;
+  max-width: 100%;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--teks);
+  background: var(--latar-subtle);
+  border: 1.5px solid var(--kartu-border);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  box-sizing: border-box;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  border-color: var(--utama);
+  background: var(--kartu);
 }
 
 /* CROPPER / PENGOLAH FOTO DI ADMIN */

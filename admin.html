@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Panel Admin - Pemilihan Pratama Pramuka</title>
   <meta name="description" content="Panel manajemen pemilihan Pratama Pramuka: pengaturan status, pembuatan token, pemantau batch, kelola paslon, dan berita acara.">
   <link rel="stylesheet" href="./style.css">
@@ -92,7 +92,7 @@
     <nav class="nav-links">
       <a href="index.html" target="_blank" class="nav-link">Bilik Suara ↗</a>
       <a href="hasil.html" target="_blank" class="nav-link">Hasil ↗</a>
-      <button id="btn-keluar-admin" class="btn btn-sekunder" style="min-height: 36px; padding: 4px 10px; font-size: 12px; display: none;">
+      <button id="btn-keluar-admin" class="btn btn-sekunder" style="min-height: 44px; padding: 6px 14px; font-size: 13px; white-space: nowrap; display: none;">
         Keluar
       </button>
     </nav>
@@ -121,7 +121,7 @@
       <form id="form-login-pin" onsubmit="event.preventDefault();">
         <div class="form-group">
           <label class="form-label" style="text-align: center;">PIN Pengaman Panitia</label>
-          <div class="input-token-wrap" style="max-width: 240px; margin: 0 auto 8px;">
+          <div class="input-token-wrap" style="width: 100%; max-width: 240px; margin: 0 auto 8px;">
             <input
               type="password"
               id="login-pin-input"
@@ -129,7 +129,7 @@
               placeholder="••••••"
               maxlength="20"
               autocomplete="off"
-              style="letter-spacing: 6px;"
+              style="letter-spacing: min(0.08em, 3px);"
               required
             >
           </div>
@@ -585,27 +585,29 @@
             Pada hari ini, tanggal <strong id="rekap-tanggal">-</strong>, telah dilaksanakan pemungutan dan penghitungan suara untuk menentukan Pasangan Calon Pratama Putri dan Calon Pratama Putra dengan rincian perolehan suara sebagai berikut:
           </p>
 
-          <table style="width: 100%; border-collapse: collapse; margin-bottom: 18px; font-size: 13px;">
-            <thead>
-              <tr style="background: #f0f0f0;">
-                <th style="border: 1px solid #000; padding: 6px; width: 60px;">No.</th>
-                <th style="border: 1px solid #000; padding: 6px;">Calon Pratama Putri</th>
-                <th style="border: 1px solid #000; padding: 6px;">Calon Pratama Putra</th>
-                <th style="border: 1px solid #000; padding: 6px; text-align: right; width: 120px;">Perolehan Suara</th>
-                <th style="border: 1px solid #000; padding: 6px; text-align: right; width: 100px;">Persentase</th>
-              </tr>
-            </thead>
-            <tbody id="rekap-tbody-paslon">
-              <!-- Render lewat admin.js -->
-            </tbody>
-            <tfoot>
-              <tr style="font-weight: bold; background: #fafafa;">
-                <td colspan="3" style="border: 1px solid #000; padding: 6px; text-align: right;">Total Suara Sah:</td>
-                <td style="border: 1px solid #000; padding: 6px; text-align: right;" id="rekap-total-suara">0</td>
-                <td style="border: 1px solid #000; padding: 6px; text-align: right;">100%</td>
-              </tr>
-            </tfoot>
-          </table>
+          <div style="width: 100%; overflow-x: auto; margin-bottom: 18px; -webkit-overflow-scrolling: touch;">
+            <table style="width: 100%; min-width: 500px; border-collapse: collapse; font-size: 13px;">
+              <thead>
+                <tr style="background: #f0f0f0;">
+                  <th style="border: 1px solid #000; padding: 6px; width: 60px;">No.</th>
+                  <th style="border: 1px solid #000; padding: 6px;">Calon Pratama Putri</th>
+                  <th style="border: 1px solid #000; padding: 6px;">Calon Pratama Putra</th>
+                  <th style="border: 1px solid #000; padding: 6px; text-align: right; width: 120px;">Perolehan Suara</th>
+                  <th style="border: 1px solid #000; padding: 6px; text-align: right; width: 100px;">Persentase</th>
+                </tr>
+              </thead>
+              <tbody id="rekap-tbody-paslon">
+                <!-- Render lewat admin.js -->
+              </tbody>
+              <tfoot>
+                <tr style="font-weight: bold; background: #fafafa;">
+                  <td colspan="3" style="border: 1px solid #000; padding: 6px; text-align: right;">Total Suara Sah:</td>
+                  <td style="border: 1px solid #000; padding: 6px; text-align: right;" id="rekap-total-suara">0</td>
+                  <td style="border: 1px solid #000; padding: 6px; text-align: right;">100%</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
 
           <div style="font-size: 12px; margin-bottom: 24px; line-height: 1.6;">
             <div>1. Total Kupon Token Terdistribusi: <strong id="rekap-token-total">0</strong> kupon.</div>
@@ -614,25 +616,25 @@
             <div>4. Status Integritas Audit: <strong id="rekap-status-audit">COCOK</strong></div>
           </div>
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; text-align: center; font-size: 12px; margin-top: 30px;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 16px; text-align: center; font-size: 12px; margin-top: 30px;">
             <div>
               <div>Saksi Regu Putri,</div>
               <div style="height: 50px;"></div>
-              <div style="font-weight: bold; border-top: 1px solid #000; display: inline-block; padding-top: 2px; min-width: 130px;">
+              <div style="font-weight: bold; border-top: 1px solid #000; display: inline-block; padding-top: 2px; width: 100%; max-width: 140px;">
                 (....................................)
               </div>
             </div>
             <div>
               <div>Saksi Regu Putra,</div>
               <div style="height: 50px;"></div>
-              <div style="font-weight: bold; border-top: 1px solid #000; display: inline-block; padding-top: 2px; min-width: 130px;">
+              <div style="font-weight: bold; border-top: 1px solid #000; display: inline-block; padding-top: 2px; width: 100%; max-width: 140px;">
                 (....................................)
               </div>
             </div>
             <div>
               <div>Ketua Panitia Pemilihan,</div>
               <div style="height: 50px;"></div>
-              <div style="font-weight: bold; border-top: 1px solid #000; display: inline-block; padding-top: 2px; min-width: 130px;">
+              <div style="font-weight: bold; border-top: 1px solid #000; display: inline-block; padding-top: 2px; width: 100%; max-width: 140px;">
                 (....................................)
               </div>
             </div>
